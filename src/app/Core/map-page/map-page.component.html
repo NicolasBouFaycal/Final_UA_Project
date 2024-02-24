@@ -1,0 +1,48 @@
+<div class="map-container">
+    <div class="map" #map id="map-canvas" (click)="setMapMarkers()"></div>
+    <div class="map-loader-container" *ngIf="!mapLoaded">
+        <div class="map-loader"></div>
+    </div>
+    <div class="map-buses-side-bar" >
+        <img (click)="leftSidebarVisible = true" src="../../../assets/imgs/ic-bus.png" alt="Buses" title="Buses">
+        <p-sidebar [(visible)]="leftSidebarVisible" position="left">
+            <h3>Available Buses</h3>
+            <input type="search" placeholder="Search for Bus" pInputText />
+            <div class="active-buses">
+                <div class="box">
+                    <label>Michel (beirut-bekaa)</label>
+                    <p-button (click)="ViewBusOnMap(1)" icon="pi pi-check" size="small"></p-button>
+                </div>
+                <div class="box">
+                    <label>Michel (beirut-bekaa)</label>
+                    <p-button icon="pi pi-check" size="small"></p-button>
+                </div>
+                <div class="box">
+                    <label>Michel (beirut-bekaa)</label>
+                    <p-button icon="pi pi-check" size="small"></p-button>
+                </div>
+                <div class="box">
+                    <label>Michel (beirut-bekaa)</label>
+                    <p-button icon="pi pi-check" size="small"></p-button>
+                </div>
+                <div class="box">
+                    <label>Michel (beirut-bekaa)</label>
+                    <p-button icon="pi pi-check" size="small"></p-button>
+                </div>
+            </div>
+        </p-sidebar>
+    </div>
+    <div class="map-Settings-side-bar" >
+        <img (click)="rightSidebarVisible = true" src="../../../assets/imgs/ic-settings.png" alt="Settings" title="Settings">
+        <p-sidebar [(visible)]="rightSidebarVisible" position="right">
+            <h3>Settings</h3>
+           <div>
+            <p-panelMenu [model]="items"></p-panelMenu>
+           </div>
+        </p-sidebar>
+    </div>
+    <div class="popup">
+        <p-toast></p-toast>
+        <p-confirmPopup></p-confirmPopup>
+    </div>
+</div>

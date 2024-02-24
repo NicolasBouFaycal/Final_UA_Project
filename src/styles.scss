@@ -1,1 +1,16 @@
 /* You can add global styles to this file, and also import other style files */
+@import "primeng/resources/themes/lara-light-blue/theme.css";
+@import "primeng/resources/primeng.css";
+@import 'primeicons/primeicons.css';
+
+body{
+    margin: auto;
+}
+canvas{
+    position: absolute;
+    left: 8px;
+}
+.p-confirm-popup{
+    margin-top:160px;
+    margin-left:10px;
+}
