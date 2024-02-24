@@ -1,1 +1,34 @@
-<p>register works!</p>
+<div class="login-container">
+    <div class="background-container">
+        <div class="form-container">
+            <h1>Bus Transportation Registration Form</h1>
+            <div class="box">
+                <label id="title-login-Form">Registration Form</label>
+                <form>
+                    <div class="element-flex-column">
+                        <label>First Name</label>
+                        <input type="text" pInputText/>
+                    </div>
+                    <div class="element-flex-column">
+                        <label>Last Name</label>
+                        <input type="text" pInputText/>
+                    </div>
+                    <div class="element-flex-column">
+                        <label>Password</label>
+                        <p-password [feedback]="false" [toggleMask]="true"></p-password>
+                    </div>
+                    <div class="element-flex-row">
+                        <p-checkbox  [binary]="true" inputId="binary"></p-checkbox>
+                        <label>Remember Me ?</label>
+                    </div>
+                    <div class="element-flex-row">
+                        <p-button label="Login"></p-button>
+                    </div>
+                    <div class="forget-password">
+                        <label routerLink="/main/authentication/register">Forget Password ?</label>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
