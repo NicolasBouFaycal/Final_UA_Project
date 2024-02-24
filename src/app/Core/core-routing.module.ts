@@ -18,6 +18,7 @@ const routes: Routes = [
     {path:'',redirectTo:"map",pathMatch:"full"},
    ]
 },  
+{path:"authentication",loadChildren:()=>import('../Modules/Authentication/authentication.module').then(m=>m.AuthenticationModule)}
 ];
 
 @NgModule({
