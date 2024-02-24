@@ -1,0 +1,72 @@
+.map-container {
+  #map-canvas {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+  }
+
+  .map-loader-container {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    .map-loader {
+      background: url("../../../assets/imgs/youps_loader.svg");
+      background-repeat: no-repeat;
+      max-width: 100%;
+      background-position: center;
+      background-size: cover;
+      width: 130px;
+      height: 130px;
+    }
+  }
+  .map-buses-side-bar {
+    img {
+      position: absolute;
+      top: 100px;
+      left: 10px;
+      height: 50px;
+      width: 50px;
+      z-index: 1;
+      background-color: white;
+      border-radius: 100%;
+      cursor: pointer;
+    }
+    input{
+        margin-bottom: 18.72px;
+    }
+    .active-buses{
+        .box{
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-around;
+            background-color: white;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom:10px ;
+        }
+    }
+  }
+  .map-Settings-side-bar{
+    img {
+        position: absolute;
+        top: 100px;
+        right:10px;
+        height: 50px;
+        width: 50px;
+        z-index: 1;
+        background-color: white;
+        border-radius: 100%;
+        cursor: pointer;
+      }
+  }
+}

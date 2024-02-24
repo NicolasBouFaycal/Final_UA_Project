@@ -1,0 +1,133 @@
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import * as faceapi from 'face-api.js';
+import { HttpClient } from '@angular/common/http';
+@Component({
+  selector: 'app-face-detection',
+  templateUrl: './face-detection.component.html',
+  styleUrls: ['./face-detection.component.scss']
+})
+export class FaceDetectionComponent implements OnInit {
+  constructor(private http: HttpClient) { }
+  @ViewChild('video') videoRef!: ElementRef<HTMLVideoElement>; // Use @ViewChild for better reference
+  public dectedFace:string="" ;
+  public intervalId:any; 
+
+  private mediaStream: MediaStream | null = null;
+  private rectangle = {
+    x: 200, 
+    y: 150,
+    width: 250,
+    height: 250,
+  };
+
+  async ngOnInit() {
+    await Promise.all([
+      faceapi.nets.tinyFaceDetector.loadFromUri('../../../assets/models'),
+      faceapi.nets.faceLandmark68Net.loadFromUri('../../../assets/models'),
+    ]);
+    this.startWebcam();
+  }
+
+  startWebcam() {
+    navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+      .then((stream) => {
+        this.videoRef.nativeElement.srcObject = stream;
+        this.mediaStream = stream;
+        // Store the stream for later stopping
+        this.videoRef.nativeElement.addEventListener('play', () => {
+          const canvas = faceapi.createCanvasFromMedia(this.videoRef.nativeElement);
+          document.body.append(canvas);
+          const ctx = canvas.getContext('2d');
+          this.intervalId =setInterval(async () => {
+            const detections = await faceapi.detectAllFaces(this.videoRef.nativeElement, new faceapi.TinyFaceDetectorOptions({
+              scoreThreshold: 0,
+            }))
+              .withFaceLandmarks();
+            if(ctx!=null){
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+              }
+            if(detections.length==0){
+              this.dectedFace = "Be closer to the camera";
+              this.setRectangleOnCanvas(ctx);
+            }
+            else if(detections.length > 1){
+              this.setRectangleOnCanvas(ctx);
+              this.dectedFace = "Error: More then one face detected";
+            }else if(detections.some(face =>!this.isFaceInRectangle(face.detection.box, this.rectangle))){
+              this.setRectangleOnCanvas(ctx);
+              this.dectedFace = "set your Face Inside the rectangle";
+            }
+            else if(detections.some(face =>face.detection.score < 0.95)){
+              this.setRectangleOnCanvas(ctx);
+              this.dectedFace = "Error: the score should be equal or greater then 0.95";
+            }
+            else if(detections.some(face =>this.isFaceInRectangle(face.detection.box, this.rectangle) && face.detection.score >= 0.95)) {
+              this.setRectangleOnCanvas(ctx);
+              clearInterval(this.intervalId); // Stop the interval when conditions are met
+              this.CaptureImage();
+            } 
+            this.setRectangleOnCanvas(ctx);
+            //canvas.getContext("2d")?.clearRect(0, 0, canvas.width, canvas.height)
+            faceapi.draw.drawDetections(canvas, detections);
+            faceapi.draw.drawFaceLandmarks(canvas, detections);
+          }, 300)
+        });
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+  setRectangleOnCanvas(ctx:any){
+    ctx.strokeStyle = 'red'; 
+    ctx.lineWidth = 2;
+    ctx.strokeRect(this.rectangle.x, this.rectangle.y, this.rectangle.width, this.rectangle.height);
+  }
+ isFaceInRectangle(faceBox: { x: number; y: number; width: any; height: any; }, rectangle: { x: number; y: number; width: any; height: any; }) {
+    return (
+      faceBox.x >= rectangle.x &&
+      faceBox.y >= rectangle.y &&
+      faceBox.x + faceBox.width <= rectangle.x + rectangle.width &&
+      faceBox.y + faceBox.height <= rectangle.y + rectangle.height
+    );
+  }
+
+   CaptureImage() {
+    this.dectedFace = "Image Captured";
+    const canvas = faceapi.createCanvasFromMedia(this.videoRef.nativeElement);
+    document.body.append(canvas);
+    const imageDataURL = canvas.toDataURL('image/png');
+    const imageBlob = this.dataURItoBlob(imageDataURL);
+    // Create a File object
+    const ImageFile = new File([imageBlob], 'image.png', { type: 'image/png' });
+
+    const formData: FormData = new FormData();
+    formData.append('ImageFile', ImageFile, ImageFile.name);
+
+    this.http.post('https://localhost:7151/WeatherForecast', formData)
+      .subscribe(response => {
+        console.log('Image sent successfully', response);
+      });
+    this.stopWebcam();
+
+  }
+
+  dataURItoBlob(dataURI : string) {
+    const byteString = atob(dataURI.split(',')[1]);
+    const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    
+    for (let i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+    }
+  
+    return new Blob([ab], { type: mimeString });
+  }
+  stopWebcam() {
+    if (this.mediaStream) {
+      this.mediaStream.getTracks().forEach(track => track.stop());
+      this.mediaStream = null;
+    }
+  }
+}
+

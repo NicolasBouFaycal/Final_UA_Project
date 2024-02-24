@@ -1,0 +1,5 @@
+<h1>payment-gatway </h1>
+<hr />
+<google-pay-button environment="TEST" buttonType="buy" buttonColor="black" [paymentRequest]="paymentRequest"
+    (loadpaymentdata)="onLoadPaymentData($event)" (error)="onError($event)"
+    [paymentAuthorizedCallback]="onPaymentDataAuthorized"></google-pay-button>
