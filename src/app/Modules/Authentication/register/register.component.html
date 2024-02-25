@@ -4,30 +4,38 @@
             <h1>Bus Transportation Registration Form</h1>
             <div class="box">
                 <label id="title-login-Form">Registration Form</label>
-                <form>
-                    <div class="element-flex-column">
-                        <label>First Name</label>
-                        <input type="text" pInputText/>
-                    </div>
-                    <div class="element-flex-column">
-                        <label>Last Name</label>
-                        <input type="text" pInputText/>
-                    </div>
-                    <div class="element-flex-column">
-                        <label>Password</label>
-                        <p-password [feedback]="false" [toggleMask]="true"></p-password>
-                    </div>
-                    <div class="element-flex-row">
-                        <p-checkbox  [binary]="true" inputId="binary"></p-checkbox>
-                        <label>Remember Me ?</label>
-                    </div>
-                    <div class="element-flex-row">
-                        <p-button label="Login"></p-button>
-                    </div>
-                    <div class="forget-password">
-                        <label routerLink="/main/authentication/register">Forget Password ?</label>
-                    </div>
-                </form>
+                <div class="container">
+                    <form>
+                        <div class="row">
+                            <div class="col-md-6 col-sm-12 element-flex-column">
+                                <label>First Name <span>*</span></label>
+                                <input type="text" pInputText />
+                            </div>
+                            <div class="col-md-6 col-sm-12 element-flex-column">
+                                <label>Last Name <span>*</span></label>
+                                <input type="text" pInputText />
+                            </div>
+                            <div class="col-md-6 col-sm-12 element-flex-column">
+                                <label>Email <span>*</span></label>
+                                <input type="text" pInputText />
+                            </div>
+                            <div class="col-md-6 col-sm-12 element-flex-column">
+                                <label>Password <span>*</span></label>
+                                <p-password  [feedback]="true" [toggleMask]="true"></p-password>
+                            </div>
+                            <div class="element-flex-img">
+                                <label>Take Profile Picture <span>*</span></label>
+                                <img (click)="openPopup()" [src]="displayImage" alt="">
+                            </div>
+                            <div class=" col-md-6 col-sm-12 element-flex-row">
+                                <p-button label="Register"></p-button>
+                            </div>
+                            <div class=" col-md-6 col-sm-12 element-flex-row">
+                                <label routerLink="/main/authentication/login">Already Have an account ? </label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

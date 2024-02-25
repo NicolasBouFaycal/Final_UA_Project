@@ -1,5 +1,12 @@
-<h2>Face Detection</h2>
-<div>
-    <label>{{dectedFace}}</label>
+<div class="face-detection-container">
+    <div class="flex-container">
+        <h2>Take Picture</h2>
+        <p-button icon="pi pi-times" mat-dialog-close size="small"></p-button>
+    </div>
+    <div class="error-type">
+        <label>{{dectedFace}}</label>
+    </div>
+    <video class="video" #video autoplay muted playsinline></video>
+    <div class="canvas-loc" #canvasContainer></div>
+    <div class="canvas-loc" #canvasContainerFinalPic></div>
 </div>
-<video #video autoplay muted playsinline></video>

@@ -8,6 +8,7 @@ import { MarkerService } from './Shared/marker.service';
 import { PopupService } from './Shared/popup.service';
 import { ShapeService } from './Shared/shape.service';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 
 @NgModule({
@@ -18,7 +19,8 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
-    BrowserAnimationsModule
+    BrowserAnimationsModule,
+    NgbModule
   ],
   providers: [MarkerService,PopupService,ShapeService],
   bootstrap: [AppComponent]

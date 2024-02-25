@@ -1,0 +1,24 @@
+.face-detection-container {
+  .canvas-loc {
+    position: absolute;
+  }
+  .video {
+    position: absolute;
+  }
+  .error-type {
+   display: flex;
+   justify-content: center;
+  }
+  h2 {
+    margin-left: 20px;
+  }
+  .flex-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    p-button {
+      margin: 20px;
+    }
+  }
+}
