@@ -68,5 +68,15 @@
         border-radius: 100%;
         cursor: pointer;
       }
+      p-panelMenu{
+        a{
+            text-decoration: none;
+            color:black;
+            span{
+                color: black;
+            }
+        }
+        
+      }
   }
 }

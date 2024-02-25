@@ -69,11 +69,11 @@ export class FaceDetectionComponent implements OnInit {
               this.dectedFace = "Error: More then one face detected";
             }else if(detections.some(face =>!this.isFaceInRectangle(face.detection.box, this.rectangle))){
               this.setRectangleOnCanvas(ctx);
-              this.dectedFace = "set your Face Inside the rectangle";
+              this.dectedFace = "Set your Face Inside the rectangle";
             }
             else if(detections.some(face =>face.detection.score < 0.95)){
               this.setRectangleOnCanvas(ctx);
-              this.dectedFace = "Error: the score should be equal or greater then 0.95";
+              this.dectedFace = "Error:Score 0.95 need more light";
             }
             else if(detections.some(face =>this.isFaceInRectangle(face.detection.box, this.rectangle) && face.detection.score >= 0.95)) {
               this.setRectangleOnCanvas(ctx);
