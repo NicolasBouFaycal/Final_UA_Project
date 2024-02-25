@@ -14,6 +14,17 @@
 .element-flex-row .p-button{
     width: 100%;
 }
+.element-container-flex p-password{
+    width: 100%;
+    margin-bottom: 30px;
+    .p-password{
+        width: 100%;
+        .p-inputtext{
+            width: 100%;
+        }
+    }
+}
+
 /* Importing Bootstrap SCSS file. */
 @import 'bootstrap/scss/bootstrap';
 
