@@ -22,6 +22,7 @@ import { ToastModule } from 'primeng/toast';
 import { ConfirmationService,MessageService  } from 'primeng/api';
 import { PanelMenuModule } from 'primeng/panelmenu';
 import { ProfileComponent } from './profile/profile.component';
+import { MatDialogModule } from'@angular/material/dialog';
 @NgModule({
   declarations: [
     MainComponent,
@@ -47,6 +48,7 @@ import { ProfileComponent } from './profile/profile.component';
     ConfirmPopupModule,
     ToastModule,
     PanelMenuModule,
+    MatDialogModule
     
   ],
   providers:[ConfirmationService,MessageService]

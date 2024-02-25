@@ -3,13 +3,6 @@
 @import "primeng/resources/primeng.css";
 @import 'primeicons/primeicons.css';
 
-body{
-    margin: auto;
-}
-canvas{
-    position: absolute;
-    left: 8px;
-}
 .p-confirm-popup{
     margin-top:160px;
     margin-left:10px;
@@ -21,3 +14,8 @@ canvas{
 .element-flex-row .p-button{
     width: 100%;
 }
+/* Importing Bootstrap SCSS file. */
+@import 'bootstrap/scss/bootstrap';
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

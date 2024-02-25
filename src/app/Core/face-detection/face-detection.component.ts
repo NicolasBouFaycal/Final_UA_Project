@@ -1,17 +1,25 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import * as faceapi from 'face-api.js';
 import { HttpClient } from '@angular/common/http';
+import { SharedService } from 'src/app/Shared/Services/shared.service';
+import { Subscription } from 'rxjs';
+ 
+
 @Component({
   selector: 'app-face-detection',
   templateUrl: './face-detection.component.html',
   styleUrls: ['./face-detection.component.scss']
 })
 export class FaceDetectionComponent implements OnInit {
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient,private sharedService:SharedService) { }
+  @ViewChild('canvasContainer', { static: true }) canvasContainer!: ElementRef;
+  @ViewChild('canvasContainerFinalPic', { static: true }) canvasContainerFinalPic!: ElementRef;
   @ViewChild('video') videoRef!: ElementRef<HTMLVideoElement>; // Use @ViewChild for better reference
   public dectedFace:string="" ;
   public intervalId:any; 
-
+  receivedData: any;
+  private subscription!: Subscription;
+  
   private mediaStream: MediaStream | null = null;
   private rectangle = {
     x: 200, 
@@ -26,6 +34,12 @@ export class FaceDetectionComponent implements OnInit {
       faceapi.nets.faceLandmark68Net.loadFromUri('../../../assets/models'),
     ]);
     this.startWebcam();
+    this.subscription = this.sharedService.data$.subscribe(data => {
+      this.receivedData = data;
+      if(data="popup closed"){
+        this.stopWebcam();
+      }
+    });
   }
 
   startWebcam() {
@@ -36,7 +50,7 @@ export class FaceDetectionComponent implements OnInit {
         // Store the stream for later stopping
         this.videoRef.nativeElement.addEventListener('play', () => {
           const canvas = faceapi.createCanvasFromMedia(this.videoRef.nativeElement);
-          document.body.append(canvas);
+          this.canvasContainer.nativeElement.appendChild(canvas);
           const ctx = canvas.getContext('2d');
           this.intervalId =setInterval(async () => {
             const detections = await faceapi.detectAllFaces(this.videoRef.nativeElement, new faceapi.TinyFaceDetectorOptions({
@@ -94,7 +108,7 @@ export class FaceDetectionComponent implements OnInit {
    CaptureImage() {
     this.dectedFace = "Image Captured";
     const canvas = faceapi.createCanvasFromMedia(this.videoRef.nativeElement);
-    document.body.append(canvas);
+    this.canvasContainerFinalPic.nativeElement.appendChild(canvas);
     const imageDataURL = canvas.toDataURL('image/png');
     const imageBlob = this.dataURItoBlob(imageDataURL);
     // Create a File object
@@ -107,8 +121,8 @@ export class FaceDetectionComponent implements OnInit {
       .subscribe(response => {
         console.log('Image sent successfully', response);
       });
+    this,this.sharedService.setImage(imageDataURL);
     this.stopWebcam();
-
   }
 
   dataURItoBlob(dataURI : string) {
@@ -126,8 +140,15 @@ export class FaceDetectionComponent implements OnInit {
   stopWebcam() {
     if (this.mediaStream) {
       this.mediaStream.getTracks().forEach(track => track.stop());
-      this.mediaStream = null;
     }
+    if (this.videoRef) {
+      this.videoRef.nativeElement.srcObject = null;
+    }
+    const canvasContainer = this.canvasContainer.nativeElement;
+    while (canvasContainer.firstChild) {
+    canvasContainer.removeChild(canvasContainer.firstChild);
+    }
+    this.mediaStream = null;
   }
 }
 

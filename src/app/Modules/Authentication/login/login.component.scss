@@ -72,11 +72,17 @@
                             width: 100%;
                         }
                     }
-                    .forget-password {
+                    .create-forget-container {
                         text-align: center;
                         margin-top: 35px;
                         label{
                             cursor: pointer;
+                        }
+                        #create-account{
+                            margin-right: 15px;
+                        }
+                        #forget-password{
+                            margin-left: 15px;
                         }
                     }
                 }
