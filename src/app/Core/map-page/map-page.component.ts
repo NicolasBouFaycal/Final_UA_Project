@@ -48,7 +48,7 @@ export class MapPageComponent implements OnInit {
           {
             label: 'Profile',
             icon: 'pi pi-fw pi-user-edit',
-            routerLink: '/main/profile',
+            routerLink:"/main/user-management/edit-profile",
             command: e => this.activeItem = e.item,
           },
           {
@@ -58,12 +58,18 @@ export class MapPageComponent implements OnInit {
             command: e => this.activeItem = e.item,
 
           },
+          {
+            label: 'Change Your Password',
+            icon: 'pi pi-fw pi-file-edit',
+            routerLink: '/main/user-management/edit-password',
+            command: e => this.activeItem = e.item,
+          },
         ],
       },
       {
         label: 'Logout',
         icon: 'pi pi-sign-out',
-        routerLink: '/main/logout',
+        routerLink: '/main/authentication/login',
         command: e => this.activeItem = e.item,
       }
     ];
