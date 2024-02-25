@@ -5,7 +5,6 @@ import { PaymentGatwayComponent } from './payment-gatway/payment-gatway.componen
 import { MapPageComponent } from './map-page/map-page.component';
 import { CaptureImageComponent } from './capture-image/capture-image.component';
 import { FaceDetectionComponent } from './face-detection/face-detection.component';
-import { ProfileComponent } from './profile/profile.component'; 
 const routes: Routes = [
   {path:'',
   component:MainComponent,
@@ -14,11 +13,11 @@ const routes: Routes = [
     {path:"payment-gateway",component:PaymentGatwayComponent},
     {path:'image',component:CaptureImageComponent},
     {path:'face-detection',component:FaceDetectionComponent },
-    {path:'profile',component:ProfileComponent},
     {path:'',redirectTo:"map",pathMatch:"full"},
    ]
 },  
-{path:"authentication",loadChildren:()=>import('../Modules/Authentication/authentication.module').then(m=>m.AuthenticationModule)}
+{path:"authentication",loadChildren:()=>import('../Modules/Authentication/authentication.module').then(m=>m.AuthenticationModule)},
+{path:"user-management",loadChildren:()=>import('../Modules/UserManagement/user-management.module').then(m=>m.UserManagementModule)}
 ];
 
 @NgModule({

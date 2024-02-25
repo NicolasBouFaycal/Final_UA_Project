@@ -11,9 +11,6 @@ import { Router } from '@angular/router';
 })
 export class MapPageComponent implements OnInit {
   items!: MenuItem[];
-
-
-
   leftSidebarVisible: boolean = false;
   rightSidebarVisible: boolean = false;
   mapLoaded!: boolean;
@@ -50,13 +47,13 @@ export class MapPageComponent implements OnInit {
         items: [
           {
             label: 'Profile',
-            icon: 'pi pi-fw pi-user-plus',
+            icon: 'pi pi-fw pi-user-edit',
             routerLink: '/main/profile',
             command: e => this.activeItem = e.item,
           },
           {
             label: 'Payment',
-            icon: 'pi pi-fw pi-user-minus',
+            icon: 'pi pi-fw pi-dollar',
             routerLink: '/main/payment',
             command: e => this.activeItem = e.item,
 
