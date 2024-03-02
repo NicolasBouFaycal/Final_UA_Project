@@ -2,7 +2,7 @@ import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { MenuItem } from 'primeng/api';
 import { Router } from '@angular/router';
-
+import { MenuService } from '../Services/menu.service';
 @Component({
   selector: 'app-map-page',
   templateUrl: './map-page.component.html',
@@ -37,42 +37,10 @@ export class MapPageComponent implements OnInit {
   private busStops: google.maps.Marker[] = [];
   activeItem: MenuItem | import("primeng/api").MegaMenuItem | undefined;
 
-  constructor(private confirmationService: ConfirmationService, private messageService: MessageService, private router: Router) { }
+  constructor(private menu:MenuService,private confirmationService: ConfirmationService, private messageService: MessageService, private router: Router) { }
 
   ngOnInit() {
-    this.items = [
-      {
-        label: 'User Manager',
-        icon: 'pi pi-fw pi-user',
-        items: [
-          {
-            label: 'Profile',
-            icon: 'pi pi-fw pi-user-edit',
-            routerLink:"/main/user-management/edit-profile",
-            command: e => this.activeItem = e.item,
-          },
-          {
-            label: 'Payment',
-            icon: 'pi pi-fw pi-dollar',
-            routerLink: '/main/payment',
-            command: e => this.activeItem = e.item,
-
-          },
-          {
-            label: 'Change Your Password',
-            icon: 'pi pi-fw pi-file-edit',
-            routerLink: '/main/user-management/edit-password',
-            command: e => this.activeItem = e.item,
-          },
-        ],
-      },
-      {
-        label: 'Logout',
-        icon: 'pi pi-sign-out',
-        routerLink: '/main/authentication/login',
-        command: e => this.activeItem = e.item,
-      }
-    ];
+    this.items = this.menu.menuModel();
 
     this.ds = new google.maps.DirectionsService();
     this.dr = new google.maps.DirectionsRenderer({

@@ -4,11 +4,13 @@ import { ForgetPasswordComponent } from './forget-password/forget-password.compo
 import { EditProfileComponent } from './edit-profile/edit-profile.component'; 
 import { EditEmailComponent } from './edit-email/edit-email.component';
 import { EditPasswordComponent } from './edit-password/edit-password.component'; 
+import { PaymentComponent } from './payment/payment.component';
 const routes: Routes = [
   {path:"forget-password",component:ForgetPasswordComponent},
   {path:"edit-profile",component:EditProfileComponent},
   {path:"edit-email",component:EditEmailComponent},
-  {path:"edit-password",component:EditPasswordComponent}
+  {path:"edit-password",component:EditPasswordComponent},
+  {path:"payment",component:PaymentComponent}
 ];
 
 @NgModule({

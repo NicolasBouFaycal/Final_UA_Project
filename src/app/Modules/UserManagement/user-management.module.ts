@@ -9,13 +9,15 @@ import { ButtonModule } from 'primeng/button';
 import { EditProfileComponent } from './edit-profile/edit-profile.component';
 import { EditEmailComponent } from './edit-email/edit-email.component';
 import { EditPasswordComponent } from './edit-password/edit-password.component';
+import { PaymentComponent } from './payment/payment.component';
 
 @NgModule({
   declarations: [
     ForgetPasswordComponent,
     EditProfileComponent,
     EditEmailComponent,
-    EditPasswordComponent
+    EditPasswordComponent,
+    PaymentComponent
   ],
   imports: [
     CommonModule,
