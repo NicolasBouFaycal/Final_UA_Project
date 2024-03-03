@@ -24,6 +24,17 @@
         }
     }
 }
+.p-button{
+    border-radius: 12px;
+}
+.b-plan3 .p-button{
+    background: #3bf6ef;
+    border-color: #3bf6ef;
+}
+.b-plan1 .p-button{
+    background: #ea6f28;
+    border-color: #ea6f28;
+}
 
 /* Importing Bootstrap SCSS file. */
 @import 'bootstrap/scss/bootstrap';

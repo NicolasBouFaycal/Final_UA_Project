@@ -1,0 +1,15 @@
+<div class="payment-container">
+    <div class="background-container">
+        <div class="container">
+            <div class="row">
+                <div class="offset-1 col-4 center-content">
+                    <h2>Payment</h2>
+                    <h5 class="">You have  choose <b>{{day}} Days</b> Plan </h5>
+                    <google-pay-button environment="TEST" buttonType="buy" buttonColor="white" [paymentRequest]="paymentRequest"
+                    (loadpaymentdata)="onLoadPaymentData($event)" (error)="onError($event)"
+                    [paymentAuthorizedCallback]="onPaymentDataAuthorized"></google-pay-button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

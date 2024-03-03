@@ -1,0 +1,95 @@
+.plan-container{
+    .background-container{
+        background-image: url(../../../../assets/imgs/user-management/plan-background-img.jpg);
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-position: center;
+        height: 100vh;
+        width: 100%;
+        position: absolute;
+        .form-container{
+            position: relative;
+            z-index: 2;
+            display:flex;
+            align-items: center;
+            flex-direction: column;
+            height: 100%;
+            justify-content: center;
+            .box{
+                position: relative;
+                display: flex;
+                align-items: center;
+                flex-direction: column;
+                background-color: rgba(255, 255, 255, 1);
+                width:70%;
+                padding: 35px;
+                border-radius: 12px;
+                h2{
+                    text-align: center;
+                }
+                #quote{
+                    color: gray;
+                    margin-bottom: 30px;
+                }
+                .plan{
+                    position: relative;
+                    width:100%;
+                    height: 60vh;
+                    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+                    border-radius: 12px;
+                    img{
+                        position: absolute;
+                        top: 0;
+                        width: 100%;
+                        border-top-left-radius: 12px;
+                        border-top-right-radius: 12px;
+                        z-index: 3;
+                    }
+                    .content{
+                        position: relative;
+                        z-index: 4;
+                        display: flex;
+                        align-items: center;
+                        flex-direction: column;
+                        label{
+                            color: white;
+                            font-size: 20px;
+                        }
+                        label:nth-child(1){
+                            margin-top: 30px;
+                        }
+                    }
+                    .place-button{
+                        display: flex;
+                        justify-content: center;
+                        align-items: end;
+                        position: absolute;
+                        height: 100%;
+                        width: 100%;
+                        bottom:30px;
+                        z-index: 1;
+                    }
+                    .center-plan{
+                        position: absolute;
+                        display: flex;
+                        height: 100%;
+                        width: 100%;
+                        margin-top: 30px;
+                        align-items: center;
+                        justify-content: center;
+                        z-index: 1;
+                        #p-1{
+                            color:#ea6f28 ;
+                        }
+                        #p-2{
+                            color: #3B82F6;
+                        }
+                        #p-3{
+                            color:#3bf6ef ;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

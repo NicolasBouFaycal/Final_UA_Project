@@ -1,0 +1,34 @@
+.payment-container{
+    .background-container{
+        background-image: url(../../../../assets/imgs/user-management/payment/bus-payment-img.jpg);
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-position: center;
+        height: 100vh;
+        width: 100%;
+        position: absolute;
+        .center-content{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+            h5{
+                margin-top: 30px;
+                margin-bottom: 55px;
+                position: relative;
+                &::after{
+                    content:"⇩";
+                    position: absolute;
+                    top: 40px;
+                    left: 50%;
+
+
+                }
+            }
+            b{
+                color:red;
+            }
+        }
+    }
+}

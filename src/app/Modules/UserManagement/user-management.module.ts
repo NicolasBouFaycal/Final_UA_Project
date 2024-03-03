@@ -10,6 +10,8 @@ import { EditProfileComponent } from './edit-profile/edit-profile.component';
 import { EditEmailComponent } from './edit-email/edit-email.component';
 import { EditPasswordComponent } from './edit-password/edit-password.component';
 import { PaymentComponent } from './payment/payment.component';
+import { PlanComponent } from './plan/plan.component';
+import { GooglePayButtonModule } from '@google-pay/button-angular';
 
 @NgModule({
   declarations: [
@@ -17,14 +19,16 @@ import { PaymentComponent } from './payment/payment.component';
     EditProfileComponent,
     EditEmailComponent,
     EditPasswordComponent,
-    PaymentComponent
+    PaymentComponent,
+    PlanComponent,
   ],
   imports: [
     CommonModule,
     UserManagementRoutingModule,
     InputTextModule,
     PasswordModule,
-    ButtonModule
+    ButtonModule,
+    GooglePayButtonModule
   ]
 })
 export class UserManagementModule { }

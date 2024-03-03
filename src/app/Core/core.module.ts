@@ -5,8 +5,6 @@ import { CoreRoutingModule } from './core-routing.module';
 import { MainComponent } from './main/main.component';
 import { GoogleMapsModule } from '@angular/google-maps';
 import { MapPageComponent } from './map-page/map-page.component';
-import { PaymentGatwayComponent } from './payment-gatway/payment-gatway.component';
-import { GooglePayButtonModule } from '@google-pay/button-angular';
 import { CaptureImageComponent } from './capture-image/capture-image.component';
 import { WebcamModule } from 'ngx-webcam';
 import { FaceDetectionComponent } from './face-detection/face-detection.component';
@@ -26,7 +24,6 @@ import { MatDialogModule } from'@angular/material/dialog';
   declarations: [
     MainComponent,
     MapPageComponent,
-    PaymentGatwayComponent,
     CaptureImageComponent,
     FaceDetectionComponent,
   ],
@@ -34,7 +31,6 @@ import { MatDialogModule } from'@angular/material/dialog';
     CommonModule,
     CoreRoutingModule,
     GoogleMapsModule,
-    GooglePayButtonModule,
     WebcamModule,
     HttpClientModule,
     SidebarModule,

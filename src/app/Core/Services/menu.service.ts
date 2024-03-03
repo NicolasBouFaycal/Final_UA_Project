@@ -21,9 +21,9 @@ export class MenuService {
             command: (e: { item: any; }) => this.activeItem = e.item,
           },
           {
-            label: 'Payment',
-            icon: 'pi pi-fw pi-dollar',
-            routerLink: '/main/user-management/payment',
+            label: 'Plans',
+            icon: 'pi pi-fw pi-book',
+            routerLink: '/main/user-management/plan',
             command: (e: { item: any; }) => this.activeItem = e.item,
 
           },
