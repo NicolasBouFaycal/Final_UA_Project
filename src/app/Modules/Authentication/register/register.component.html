@@ -5,30 +5,30 @@
             <div class="box">
                 <label id="title-register-Form">Registration Form</label>
                 <div class="container">
-                    <form>
+                    <form [formGroup]="registration">
                         <div class="row">
                             <div class="col-md-6 col-sm-12 element-flex-column">
                                 <label>First Name <span>*</span></label>
-                                <input type="text" pInputText />
+                                <input type="text" pInputText formControlName="firstName"/>
                             </div>
                             <div class="col-md-6 col-sm-12 element-flex-column">
                                 <label>Last Name <span>*</span></label>
-                                <input type="text" pInputText />
+                                <input type="text" pInputText formControlName="lastName"/>
                             </div>
                             <div class="col-md-6 col-sm-12 element-flex-column">
                                 <label>Email <span>*</span></label>
-                                <input type="text" pInputText />
+                                <input type="text" pInputText formControlName="email"/>
                             </div>
                             <div class="col-md-6 col-sm-12 element-flex-column">
                                 <label>Password <span>*</span></label>
-                                <p-password  [feedback]="true" [toggleMask]="true"></p-password>
+                                <p-password  [feedback]="true" [toggleMask]="true" formControlName="password"></p-password>
                             </div>
                             <div class="element-flex-img">
                                 <label>Take Profile Picture <span>*</span></label>
                                 <img (click)="openPopup()" [src]="displayImage" alt="">
                             </div>
                             <div class=" col-md-6 col-sm-12 element-flex-row">
-                                <p-button label="Register"></p-button>
+                                <p-button (click)="onSubmit()" label="Register"></p-button>
                             </div>
                             <div class=" col-md-6 col-sm-12 element-flex-row">
                                 <label routerLink="/main/authentication/login">Already Have an account ? </label>
@@ -39,4 +39,11 @@
             </div>
         </div>
     </div>
+    <p-dialog [header]="header" [(visible)]="visible" [modal]="true" [style]="{ width: '50vw' }" [draggable]="false" [resizable]="false">
+        <p class="m-0">
+            {{content}}
+        </p>
+    </p-dialog>
+    <p-confirmDialog [style]="{width: '50vw'}"acceptLabel="ok" [closable]=false [rejectVisible]=false></p-confirmDialog>
+
 </div>

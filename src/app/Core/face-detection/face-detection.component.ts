@@ -110,32 +110,8 @@ export class FaceDetectionComponent implements OnInit {
     const canvas = faceapi.createCanvasFromMedia(this.videoRef.nativeElement);
     this.canvasContainerFinalPic.nativeElement.appendChild(canvas);
     const imageDataURL = canvas.toDataURL('image/png');
-    const imageBlob = this.dataURItoBlob(imageDataURL);
-    // Create a File object
-    const ImageFile = new File([imageBlob], 'image.png', { type: 'image/png' });
-
-    const formData: FormData = new FormData();
-    formData.append('ImageFile', ImageFile, ImageFile.name);
-
-    this.http.post('https://localhost:7151/WeatherForecast', formData)
-      .subscribe(response => {
-        console.log('Image sent successfully', response);
-      });
     this,this.sharedService.setImage(imageDataURL);
     this.stopWebcam();
-  }
-
-  dataURItoBlob(dataURI : string) {
-    const byteString = atob(dataURI.split(',')[1]);
-    const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
-    const ab = new ArrayBuffer(byteString.length);
-    const ia = new Uint8Array(ab);
-    
-    for (let i = 0; i < byteString.length; i++) {
-      ia[i] = byteString.charCodeAt(i);
-    }
-  
-    return new Blob([ab], { type: mimeString });
   }
   stopWebcam() {
     if (this.mediaStream) {

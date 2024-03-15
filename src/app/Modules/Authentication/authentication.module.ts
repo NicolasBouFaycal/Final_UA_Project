@@ -9,6 +9,9 @@ import { PasswordModule } from 'primeng/password';
 import { CheckboxModule } from 'primeng/checkbox';
 import { ButtonModule } from 'primeng/button';
 import { MatDialogModule } from'@angular/material/dialog';
+import { ReactiveFormsModule } from '@angular/forms';
+import { DialogModule } from 'primeng/dialog';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 @NgModule({
   declarations: [
@@ -22,7 +25,10 @@ import { MatDialogModule } from'@angular/material/dialog';
     PasswordModule,
     CheckboxModule,
     ButtonModule,
-    MatDialogModule
+    MatDialogModule,
+    ReactiveFormsModule,
+    DialogModule,
+    ConfirmDialogModule,
   ]
 })
 export class AuthenticationModule { }

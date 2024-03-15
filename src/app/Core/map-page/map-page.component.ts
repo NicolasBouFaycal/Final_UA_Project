@@ -3,6 +3,8 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { MenuItem } from 'primeng/api';
 import { Router } from '@angular/router';
 import { MenuService } from '../Services/menu.service';
+import { HttpClient } from '@angular/common/http';
+
 @Component({
   selector: 'app-map-page',
   templateUrl: './map-page.component.html',
@@ -35,9 +37,11 @@ export class MapPageComponent implements OnInit {
   clickEventListener!: google.maps.MapsEventListener;
   saveBusStopLongLat: any;
   private busStops: google.maps.Marker[] = [];
+  private routeCoordinates: any;
+  private BusStops: any;
   activeItem: MenuItem | import("primeng/api").MegaMenuItem | undefined;
 
-  constructor(private menu:MenuService,private confirmationService: ConfirmationService, private messageService: MessageService, private router: Router) { }
+  constructor(private http: HttpClient, private menu: MenuService, private confirmationService: ConfirmationService, private messageService: MessageService, private router: Router) { }
 
   ngOnInit() {
     this.items = this.menu.menuModel();
@@ -55,7 +59,7 @@ export class MapPageComponent implements OnInit {
       };
 
       this.initializeMap();
-
+      this.drawStaticRoute();
       //draw current Location;
 
       // var currentLocation = new google.maps.Marker({
@@ -239,36 +243,54 @@ export class MapPageComponent implements OnInit {
   }
   public drawStaticRoute() {
     // Example coordinates for the route
-    const routeCoordinates = [
-      { lat: 33.89375720009157, lng: 35.550903243838526 },
-      { lat: 33.89417919761444, lng: 35.5487859249115 },
-      { lat: 33.89472175224164, lng: 35.54696823661286 },
-      { lat: 33.895269788499476, lng: 35.544723434104505 },
-      { lat: 33.895675333144474, lng: 35.54320489105064 },
-      { lat: 33.89665082503735, lng: 35.53928308880129 },
-      { lat: 33.89748382002277, lng: 35.53608754608829 },
-      { lat: 33.89849485311016, lng: 35.531766924560614 },
-      { lat: 33.89942647082, lng: 35.527026428718344 },
-    ];
-
-    // Create a Polyline with the specified coordinates
-    const routePolyline = new google.maps.Polyline({
-      path: routeCoordinates,
-      geodesic: true,
-      strokeColor: '#FF0000', // Color of the route line
-      strokeOpacity: 1.0,
-      strokeWeight: 4,
-      // Thickness of the route line
-      map: this.map
+    this.http.get("https://localhost:7103/api/Buses/routes").subscribe((response: any) => {
+      this.routeCoordinates = response.message.map((groupedRoute: any) => {
+        return groupedRoute.routeStops.map((routeStop: any) => ({
+          lat: routeStop.routeLatitude,
+          lng: routeStop.routeLongitude,
+        }));
+      });
+      this.BusStops = response.message.map((groupedRoute: any) => {
+        return groupedRoute.routeStops.map((routeStop: any) => ({
+          lat: routeStop.busStopLatitude,
+          lng: routeStop.busStopLongitude,
+        }));
+      });
+      for (const routeCoordinate of this.routeCoordinates) {
+        console.log(routeCoordinate);
+        // Create a Polyline with the specified coordinates
+        const routePolyline = new google.maps.Polyline({
+          path: routeCoordinate,
+          geodesic: true,
+          strokeColor: '#FF0000', // Color of the route line
+          strokeOpacity: 1.0,
+          strokeWeight: 4,
+          // Thickness of the route line
+          map: this.map
+        });
+      }
+      for (const BusStop of this.BusStops) {
+        this.CreateBusStops(BusStop);
+      }
     });
-    this.CreateBusStops(routeCoordinates);
 
+    // const routeCoordinates = [
+    //   { lat: 33.89375720009157, lng: 35.550903243838526 },
+    //   { lat: 33.89417919761444, lng: 35.5487859249115 },
+    //   { lat: 33.89472175224164, lng: 35.54696823661286 },
+    //   { lat: 33.895269788499476, lng: 35.544723434104505 },
+    //   { lat: 33.895675333144474, lng: 35.54320489105064 },
+    //   { lat: 33.89665082503735, lng: 35.53928308880129 },
+    //   { lat: 33.89748382002277, lng: 35.53608754608829 },
+    //   { lat: 33.89849485311016, lng: 35.531766924560614 },
+    //   { lat: 33.89942647082, lng: 35.527026428718344 },
+    // ];
     // Calculate the bounds based on route coordinates
-    const bounds = new google.maps.LatLngBounds();
-    routeCoordinates.forEach(coord => bounds.extend(new google.maps.LatLng(coord.lat, coord.lng)));
+    //const bounds = new google.maps.LatLngBounds();
+    //routeCoordinate.forEach((coord: { lat: number | google.maps.LatLng | google.maps.LatLngLiteral; lng: number | boolean | null | undefined; }) => bounds.extend(new google.maps.LatLng(coord.lat, coord.lng)));
 
     // Set the map viewport to fit the calculated bounds
-    this.map.fitBounds(bounds);
+    //this.map.fitBounds(bounds);
 
     // Optionally, you can set a minimum zoom level to prevent the map from zooming too close
     const maxZoom = 15;

@@ -12,6 +12,7 @@ import { EditPasswordComponent } from './edit-password/edit-password.component';
 import { PaymentComponent } from './payment/payment.component';
 import { PlanComponent } from './plan/plan.component';
 import { GooglePayButtonModule } from '@google-pay/button-angular';
+import { ReactiveFormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -28,7 +29,8 @@ import { GooglePayButtonModule } from '@google-pay/button-angular';
     InputTextModule,
     PasswordModule,
     ButtonModule,
-    GooglePayButtonModule
+    GooglePayButtonModule,
+    ReactiveFormsModule
   ]
 })
 export class UserManagementModule { }
