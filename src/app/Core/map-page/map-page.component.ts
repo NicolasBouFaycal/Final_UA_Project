@@ -13,6 +13,7 @@ import { Subscription, fromEvent, interval, takeWhile } from 'rxjs';
   encapsulation: ViewEncapsulation.None,
 })
 export class MapPageComponent implements OnInit {
+  public latLong:any={lat:0,lng:0};
   public userRole:any;
   items!: MenuItem[];
   leftSidebarVisible: boolean = false;
@@ -377,7 +378,7 @@ export class MapPageComponent implements OnInit {
     navigator.geolocation.watchPosition(
       position => {
         newLocation = { lng: position.coords.longitude, lat: position.coords.latitude };
-      console.log(newLocation);
+        this.latLong=newLocation;
       }
     );
   }
