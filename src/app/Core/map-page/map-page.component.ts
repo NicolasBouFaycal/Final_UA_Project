@@ -4,7 +4,8 @@ import { MenuItem } from 'primeng/api';
 import { Router } from '@angular/router';
 import { MenuService } from '../Services/menu.service';
 import { HttpClient } from '@angular/common/http';
-
+import { AuthenticationService } from 'src/app/Modules/UserManagement/Services/authentication.service';
+import { Subscription, fromEvent, interval, takeWhile } from 'rxjs';
 @Component({
   selector: 'app-map-page',
   templateUrl: './map-page.component.html',
@@ -12,13 +13,16 @@ import { HttpClient } from '@angular/common/http';
   encapsulation: ViewEncapsulation.None,
 })
 export class MapPageComponent implements OnInit {
+  public userRole:any;
   items!: MenuItem[];
   leftSidebarVisible: boolean = false;
   rightSidebarVisible: boolean = false;
   mapLoaded!: boolean;
   map!: google.maps.Map;
   center!: google.maps.LatLngLiteral;
-
+ 
+  private currentLocation:any = null;
+  private _subscription!: Subscription;
   source!: google.maps.LatLngLiteral;
   destination!: google.maps.LatLngLiteral;
   clickedLocationMarker: google.maps.Marker | undefined;
@@ -41,9 +45,12 @@ export class MapPageComponent implements OnInit {
   private BusStops: any;
   activeItem: MenuItem | import("primeng/api").MegaMenuItem | undefined;
 
-  constructor(private http: HttpClient, private menu: MenuService, private confirmationService: ConfirmationService, private messageService: MessageService, private router: Router) { }
+  constructor(private _authenticaitonService:AuthenticationService,private http: HttpClient, private menu: MenuService, private confirmationService: ConfirmationService, private messageService: MessageService, private router: Router) { }
 
   ngOnInit() {
+    this._authenticaitonService.loginUser.subscribe((respnse:any)=>{
+      this.userRole=respnse;
+    });
     this.items = this.menu.menuModel();
 
     this.ds = new google.maps.DirectionsService();
@@ -122,6 +129,8 @@ export class MapPageComponent implements OnInit {
       //this.setRoutePolyline(this.source,this.destination);
 
       this.map.setCenter(this.center);
+
+      this.updateBusLocation();
     });
   }
   public confirm() {
@@ -257,7 +266,6 @@ export class MapPageComponent implements OnInit {
         }));
       });
       for (const routeCoordinate of this.routeCoordinates) {
-        console.log(routeCoordinate);
         // Create a Polyline with the specified coordinates
         const routePolyline = new google.maps.Polyline({
           path: routeCoordinate,
@@ -364,5 +372,13 @@ export class MapPageComponent implements OnInit {
       console.error('Map canvas element not found.');
     }
   }
-
+  private updateBusLocation() {
+    let newLocation;
+    navigator.geolocation.watchPosition(
+      position => {
+        newLocation = { lng: position.coords.longitude, lat: position.coords.latitude };
+      console.log(newLocation);
+      }
+    );
+  }
 }

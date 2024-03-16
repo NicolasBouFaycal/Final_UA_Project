@@ -58,7 +58,7 @@ export class RegisterComponent implements OnInit {
         email: this.registration.get("email")?.value,
         password: pass,
         profilePic: this.displayImage,
-        RoleId: 1
+        RoleId: 2
       }
 
        this.http.post('https://localhost:7103/api/Authentication/register', registration).subscribe((response:any) =>{

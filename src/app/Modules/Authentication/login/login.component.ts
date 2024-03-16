@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { FormBuilder, Validators } from '@angular/forms';
-import * as CryptoJS from 'crypto-js';
 import {  Router } from '@angular/router';
+import { AuthenticationService } from '../../UserManagement/Services/authentication.service'; 
 
 @Component({
   selector: 'app-login',
@@ -14,7 +14,7 @@ export class LoginComponent {
   public header:string="";
   public content:string="";
 
-  constructor(private router:Router,private http:HttpClient,private fb:FormBuilder){}
+  constructor(private _authenticationService:AuthenticationService,private router:Router,private http:HttpClient,private fb:FormBuilder){}
 
   login = this.fb.group({
     email: [''],
@@ -35,9 +35,15 @@ export class LoginComponent {
           if(response.message == "false"){
             this.showDialog("Error","Wrong email or password");
           }else{
+            if(response.message.roleId == 2){
+              this._authenticationService.loginUser.next(2);
+            }else if(response.message.roleId == 1){
+              this._authenticationService.loginUser.next(1);
+            }else{
+              this._authenticationService.loginUser.next(3);  
+            }
             this.router.navigate(['/main/map']);
-            console.log(response.message);
-          }  
+        }  
       });
     }
   }
