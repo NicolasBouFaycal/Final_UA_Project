@@ -36,11 +36,11 @@ export class LoginComponent {
             this.showDialog("Error","Wrong email or password");
           }else{
             if(response.message.roleId == 2){
-              this._authenticationService.loginUser.next(2);
+              this._authenticationService.setLogedUser(2);
             }else if(response.message.roleId == 1){
-              this._authenticationService.loginUser.next(1);
+              this._authenticationService.setLogedUser(2);
             }else{
-              this._authenticationService.loginUser.next(3);  
+              this._authenticationService.setLogedUser(2);  
             }
             this.router.navigate(['/main/map']);
         }  

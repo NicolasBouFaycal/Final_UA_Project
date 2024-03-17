@@ -6,6 +6,7 @@ import { MenuService } from '../Services/menu.service';
 import { HttpClient } from '@angular/common/http';
 import { AuthenticationService } from 'src/app/Modules/UserManagement/Services/authentication.service';
 import { Subscription, fromEvent, interval, takeWhile } from 'rxjs';
+
 @Component({
   selector: 'app-map-page',
   templateUrl: './map-page.component.html',
@@ -13,17 +14,27 @@ import { Subscription, fromEvent, interval, takeWhile } from 'rxjs';
   encapsulation: ViewEncapsulation.None,
 })
 export class MapPageComponent implements OnInit {
-  public latLong:any={lat:0,lng:0};
-  public userRole:any;
+  public userRole: Number = 0;
   items!: MenuItem[];
   leftSidebarVisible: boolean = false;
   rightSidebarVisible: boolean = false;
   mapLoaded!: boolean;
   map!: google.maps.Map;
   center!: google.maps.LatLngLiteral;
- 
-  private currentLocation:any = null;
-  private _subscription!: Subscription;
+  public setBusRouteData: Array<any> = []
+  public searchBus: string = "";
+  public showSeeAllBuses=false; 
+
+  private _firstEnterToMapDraw=true;
+  private intervalsetSingleBusRoute!:Subscription;
+  private _saveSingleRoute:google.maps.LatLngLiteral[]=[];
+  private _saveSingleBusStop:google.maps.LatLngLiteral[]=[];
+  private _routePolilyne: Array<google.maps.Polyline> = [];
+  private getAllActiveBusesSubsription!: Subscription;
+  private _anonymousFilterBusRouteData: Array<any> = [];
+  private _filterBusRouteData: Array<any> = [{ userName: "", routeName: "", busLng: "", busLat: "", busId: "" }];
+  private _allActiveBusesMarkers: Array<google.maps.Marker> = [];
+  private _busCurrentLocation!: google.maps.Marker;
   source!: google.maps.LatLngLiteral;
   destination!: google.maps.LatLngLiteral;
   clickedLocationMarker: google.maps.Marker | undefined;
@@ -46,12 +57,14 @@ export class MapPageComponent implements OnInit {
   private BusStops: any;
   activeItem: MenuItem | import("primeng/api").MegaMenuItem | undefined;
 
-  constructor(private _authenticaitonService:AuthenticationService,private http: HttpClient, private menu: MenuService, private confirmationService: ConfirmationService, private messageService: MessageService, private router: Router) { }
+  constructor(private _authenticaitonService: AuthenticationService, private http: HttpClient, private menu: MenuService, private confirmationService: ConfirmationService, private messageService: MessageService, private router: Router) {
+    this.getBusRouteDataSideMenu();
+  }
 
-  ngOnInit() {
-    this._authenticaitonService.loginUser.subscribe((respnse:any)=>{
-      this.userRole=respnse;
-    });
+  async ngOnInit() {
+
+    await this.initializeMap();
+
     this.items = this.menu.menuModel();
 
     this.ds = new google.maps.DirectionsService();
@@ -59,80 +72,28 @@ export class MapPageComponent implements OnInit {
       map: null,
       suppressMarkers: true
     });
+    if (this._authenticaitonService.getLogedUser() == 2) {
+      this.updateBusLocation();
+    };
 
     navigator.geolocation.getCurrentPosition(position => {
       this.center = {
         lat: position.coords.latitude,
         lng: position.coords.longitude
       };
-
-      this.initializeMap();
       this.drawStaticRoute();
-      //draw current Location;
-
-      // var currentLocation = new google.maps.Marker({
-      //   position: this.center,
-      //   map: this.map,
-      //   title: 'Your Location'
-      // });
-
-
-      //chage lat and log for any marker , loive tracking.
-
-      // setInterval(() => {
-      //   // Update latitude and longitude by adding a small value (e.g., 0.001)
-      //   this.center.lat += 0.001;
-      //   this.center.lng += 0.001;
-
-      //   // Set the updated position to the marker
-      //   currentLocation.setPosition(this.center);
-      // }, 1000); // Update every 1000 milliseconds (1 second)
-
-      // this.createdMarkers.forEach((marker: { getPosition: () => any; }, index: number) => {
-      //   console.log(`Marker ${index + 1} position:`, marker.getPosition());
-      //   // Perform actions with each marker as needed
-      // });
-
-      this.source = {
-        lat: 37.4220656,
-        lng: -122.0840897
-      };
-
-      this.destination = {
-        lat: 37.342226,
-        lng: -122.0256165
-      };
 
       this.map.addListener('tilesloaded', () => {
         this.mapLoaded = true;
       });
-      // adding a marker
-      var markerStart = new google.maps.Marker({
-        position: this.source,
-        icon: {
-          url: './assets/imgs/truck_pin.svg',
-          anchor: new google.maps.Point(35, 10),
-          scaledSize: new google.maps.Size(100, 100)
-        },
-        map: this.map
-      });
-
-      var destinationMarker = new google.maps.Marker({
-        position: this.destination,
-        icon: {
-          url: './assets/imgs/destination_custom_pin.svg',
-          anchor: new google.maps.Point(35, 10),
-          scaledSize: new google.maps.Size(100, 100)
-        },
-        map: this.map
-      });
-
-      //this.setRoutePolyline(this.source,this.destination);
-
       this.map.setCenter(this.center);
-
-      this.updateBusLocation();
     });
+  this.asyncAllActiveBuses();
+
+    interval(2000)
+      .subscribe(() => {
+        this.getBusRouteDataSideMenu();
+      });
   }
   public confirm() {
     const dummyElement = document.createElement('div');
@@ -150,6 +111,14 @@ export class MapPageComponent implements OnInit {
       },
 
     });
+  }
+
+  public getAllActiveBusesAgain(){
+    this.showSeeAllBuses=false;
+    this.intervalsetSingleBusRoute.unsubscribe();
+    this.removeAll();
+    this.asyncAllActiveBuses();
+    this.drawStaticRoute();
   }
 
 
@@ -251,6 +220,11 @@ export class MapPageComponent implements OnInit {
       });
     });
   }
+
+  public searchBuses(searchBus: string) {
+    this.setBusRouteData = this._filterBusRouteData.filter(d => d.userName.includes(searchBus) || d.routeName.includes(searchBus));
+  }
+
   public drawStaticRoute() {
     // Example coordinates for the route
     this.http.get("https://localhost:7103/api/Buses/routes").subscribe((response: any) => {
@@ -277,34 +251,32 @@ export class MapPageComponent implements OnInit {
           // Thickness of the route line
           map: this.map
         });
+        this._routePolilyne.push(routePolyline);
       }
       for (const BusStop of this.BusStops) {
         this.CreateBusStops(BusStop);
       }
     });
-
-    // const routeCoordinates = [
-    //   { lat: 33.89375720009157, lng: 35.550903243838526 },
-    //   { lat: 33.89417919761444, lng: 35.5487859249115 },
-    //   { lat: 33.89472175224164, lng: 35.54696823661286 },
-    //   { lat: 33.895269788499476, lng: 35.544723434104505 },
-    //   { lat: 33.895675333144474, lng: 35.54320489105064 },
-    //   { lat: 33.89665082503735, lng: 35.53928308880129 },
-    //   { lat: 33.89748382002277, lng: 35.53608754608829 },
-    //   { lat: 33.89849485311016, lng: 35.531766924560614 },
-    //   { lat: 33.89942647082, lng: 35.527026428718344 },
-    // ];
-    // Calculate the bounds based on route coordinates
-    //const bounds = new google.maps.LatLngBounds();
-    //routeCoordinate.forEach((coord: { lat: number | google.maps.LatLng | google.maps.LatLngLiteral; lng: number | boolean | null | undefined; }) => bounds.extend(new google.maps.LatLng(coord.lat, coord.lng)));
-
-    // Set the map viewport to fit the calculated bounds
-    //this.map.fitBounds(bounds);
-
     // Optionally, you can set a minimum zoom level to prevent the map from zooming too close
     const maxZoom = 15;
     const zoom = this.map.getZoom() || 0;
     this.map.setZoom(Math.min(zoom, maxZoom));
+  }
+
+  public drawSingleStaticRoute(routeStopsCoordinates: any) {
+
+    // Create a Polyline with the specified coordinates
+    const routePolyline = new google.maps.Polyline({
+      path: routeStopsCoordinates,
+      geodesic: true,
+      strokeColor: '#FF0000', // Color of the route line
+      strokeOpacity: 1.0,
+      strokeWeight: 4,
+      // Thickness of the route line
+      map: this.map
+    });
+    this._routePolilyne.push(routePolyline);
+
   }
 
   public CreateBusStops(routeCoordinates: google.maps.LatLngLiteral[]) {
@@ -351,11 +323,106 @@ export class MapPageComponent implements OnInit {
     this.clickedOnBusStop = true;
   }
 
-  public ViewBusOnMap(id: number) {
+  public ViewBusOnMap(busLng: string, busLat: string, busId: string) {
+    this.showSeeAllBuses=true;
+    if(!this._firstEnterToMapDraw){
+      this.intervalsetSingleBusRoute.unsubscribe();
+    }
+    this._firstEnterToMapDraw=false;
+    this.getAllActiveBusesSubsription.unsubscribe();
     this.leftSidebarVisible = false;
-    this.drawStaticRoute();
-
+    let enterfirstTime = true;
+    this.removeAll();
+    this.intervalsetSingleBusRoute=interval(2000)
+      .subscribe(() => { 
+        if(enterfirstTime){
+          this.refreshBusLocationAndRoute(busId,enterfirstTime);
+          enterfirstTime=false;
+        }else{
+          this.refreshBusLocationAndRoute(busId,enterfirstTime);
+        }
+      }); 
   }
+
+  private removeAll()
+  {
+    this._allActiveBusesMarkers.forEach(markerBusData => {
+      markerBusData.setMap(null);
+    });
+    this._allActiveBusesMarkers = [];
+    this.busStops.forEach(busStopMarker => {
+      busStopMarker.setMap(null);
+    })
+    this.busStops = [];
+    this._routePolilyne.forEach(routePolilyne => {
+      routePolilyne.setMap(null);
+    })
+    this._routePolilyne = [];
+  }
+
+  private refreshBusLocationAndRoute(busId:any,enterFirstTime:boolean){
+    this.http.get(`https://localhost:7103/api/Buses/specificBusDetails?busId=${busId}`).subscribe((response: any) => {
+      if(!this.areLatLngArraysEqual(this._saveSingleRoute,response.message.routeStopsCoordinates)){
+        this._saveSingleRoute=response.message.routeStopsCoordinates;
+        this.drawSingleStaticRoute(response.message.routeStopsCoordinates);
+      }
+      if(!this.areLatLngArraysEqual(this._saveSingleBusStop,response.message.busStopsCoordinates)){
+        this._saveSingleBusStop=response.message.busStopsCoordinates;
+        this.CreateBusStops(response.message.busStopsCoordinates);
+      }
+      this.setSingleBusMarker(Number(response.message.busCoordinates.lat),Number(response.message.busCoordinates.lng),response.message.busCoordinates.nbOfPassengers,response.message.busCoordinates.name,enterFirstTime);
+      let BusPosition: google.maps.LatLngLiteral = { lat: Number(response.message.lat), lng: Number(response.message.lng) }
+      const marker = new google.maps.Marker({
+        position: BusPosition,
+      });
+    })
+  }
+
+  private areLatLngArraysEqual(arr1: google.maps.LatLngLiteral[], arr2: google.maps.LatLngLiteral[]): boolean {
+    // Check if the arrays have the same length
+    if (arr1.length !== arr2.length) {
+        return false;
+    }
+
+    // Compare arrays element by element
+    for (let i = 0; i < arr1.length; i++) {
+        if (arr1[i].lat !== arr2[i].lat || arr1[i].lng !== arr2[i].lng) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+  private setSingleBusMarker(lat:number,lng:number,nbOfPassenger:string,name:string,enterFirstTime:boolean){
+    let BusPosition: google.maps.LatLngLiteral = { lat: lat, lng: lng }
+    const currentBus = new google.maps.Marker({
+      position: BusPosition,
+      icon: {
+        url: './assets/imgs/bus.png',
+        anchor: new google.maps.Point(35, 10),
+        scaledSize: new google.maps.Size(50, 50)
+      },
+      map: this.map,
+    });
+    this._allActiveBusesMarkers.push(currentBus);
+    
+    if(enterFirstTime){
+      this.map.setCenter(currentBus.getPosition()!);
+      this.map.setZoom(12);
+    }
+    google.maps.event.addListener(currentBus, 'click', (event: any) => {
+      this.infoWindow?.close();
+      //const infoWindowContent = `<div><strong>Marker Details</strong><br/>Lat: ${busStopCoordinates?.lat()}<br/>Lng: ${busStopCoordinates?.lng()}</div>`;
+      const infoWindowContent = `<div><strong>Bus Details</strong><br/><b>Name:</b> ${name}<br/><b>Passengers Number:</b> ${nbOfPassenger}</div>`;
+      // Create and open an infowindow with the details
+      this.infoWindow = new google.maps.InfoWindow({
+        content: infoWindowContent
+      });
+      this.infoWindow.open(this.map, currentBus);
+    });
+  }
+
   private initializeMap(): void {
     const mapCanvas = document.getElementById('map-canvas');
 
@@ -373,13 +440,117 @@ export class MapPageComponent implements OnInit {
       console.error('Map canvas element not found.');
     }
   }
+  
+  private asyncAllActiveBuses(){
+    this.getAllActiveBusesSubsription = interval(2000)
+    .subscribe(() => {
+      this.getAllActiveBuses();
+    });
+  }
+
+  private setBusLiveMarker(currentLocation: any) {
+    if (this._busCurrentLocation) {
+      this._busCurrentLocation.setMap(null);
+    }
+    // For simplicity, create a bus stop marker at every coordinate
+    this._busCurrentLocation = new google.maps.Marker({
+      position: currentLocation,
+      map: this.map,
+      title: `Name of the Driver`
+    });
+    // Attach a click event listener to the bus stop marker
+    google.maps.event.addListener(this._busCurrentLocation, 'click', (event: any) => {
+      this.infoWindow?.close();
+      const busStopCoordinates = this._busCurrentLocation.getPosition();
+      //const infoWindowContent = `<div><strong>Marker Details</strong><br/>Lat: ${busStopCoordinates?.lat()}<br/>Lng: ${busStopCoordinates?.lng()}</div>`;
+      const infoWindowContent = `<div><strong>Bus Details</strong><br/><b>Name:</b> Michel<br/><b>Passengers Number:</b> 4</div>`;
+
+      // Create and open an infowindow with the details
+      this.infoWindow = new google.maps.InfoWindow({
+        content: infoWindowContent
+      });
+      this.infoWindow.open(this.map, this._busCurrentLocation);
+      // Handle bus stop click event, e.g., display information or perform an action
+      this.clickedOnBusStop = false;
+      this.saveBusStopLongLat = {
+        lat: busStopCoordinates?.lat(),
+        lng: busStopCoordinates?.lng()
+      };
+      this.confirm();
+    });
+  };
+
   private updateBusLocation() {
-    let newLocation;
+    let currentLocation;
     navigator.geolocation.watchPosition(
       position => {
-        newLocation = { lng: position.coords.longitude, lat: position.coords.latitude };
-        this.latLong=newLocation;
+        currentLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
+        this.setBusLiveMarker(currentLocation);
       }
     );
+  }
+
+  private getAllActiveBuses() {
+    if (this._allActiveBusesMarkers.length !== 0) {
+      this._allActiveBusesMarkers = this._allActiveBusesMarkers.filter(marker => {
+        marker.setMap(null);
+        return false; // Keeps no elements in the filtered array
+      });
+    }
+    this.http.get("https://localhost:7103/api/Buses/buses").subscribe((response: any) => {
+      response.message.forEach((element: any) => {
+        let latLngBus = { lat: element.latitude, lng: element.longitude }
+        const _busCurrentLocation = new google.maps.Marker({
+          position: latLngBus,
+          icon: {
+            url: './assets/imgs/bus.png',
+            anchor: new google.maps.Point(35, 10),
+            scaledSize: new google.maps.Size(50, 50)
+          },
+          map: this.map,
+          title: element.name
+        });
+        this._allActiveBusesMarkers.push(_busCurrentLocation);
+        // Attach a click event listener to the bus stop marker
+        google.maps.event.addListener(_busCurrentLocation, 'click', (event: any) => {
+          this.infoWindow?.close();
+          //const infoWindowContent = `<div><strong>Marker Details</strong><br/>Lat: ${busStopCoordinates?.lat()}<br/>Lng: ${busStopCoordinates?.lng()}</div>`;
+          const infoWindowContent = `<div><strong>Bus Details</strong><br/><b>Name:</b> ${element.name}<br/><b>Passengers Number:</b> ${element.numberOfPassenger}</div>`;
+          // Create and open an infowindow with the details
+          this.infoWindow = new google.maps.InfoWindow({
+            content: infoWindowContent
+          });
+          this.infoWindow.open(this.map, _busCurrentLocation);
+        });
+      });
+    });
+  };
+
+  private getBusRouteDataSideMenu() {
+    this.http.get("https://localhost:7103/api/Buses/busRouteInfo").subscribe((response: any) => {
+      this._anonymousFilterBusRouteData = [];
+      response.message.forEach((element: any) => {
+        this._anonymousFilterBusRouteData.push({ userName: element.userName, routeName: element.routeName, busLng: element.busRouteLong, busLat: element.busRouteLat, busId: element.busId });
+      });
+      if (!this.arraysHaveSameElements(this._anonymousFilterBusRouteData, this._filterBusRouteData)) {
+        console.log("enter");
+        this._filterBusRouteData = this._anonymousFilterBusRouteData;
+        this.setBusRouteData = this._anonymousFilterBusRouteData;
+      }
+    })
+  }
+
+  private arraysHaveSameElements(arr1: { userName: string; routeName: string }[], arr2: { userName: string; routeName: string }[]): boolean {
+    if (arr1.length !== arr2.length) {
+      return false;
+    }
+    for (let i = 0; i < arr1.length; i++) {
+      const obj1 = arr1[i];
+      const obj2 = arr2[i];
+      if (obj1.userName !== obj2.userName || obj1.routeName !== obj2.routeName) {
+        return false;
+      }
+    }
+    return true;
   }
 }

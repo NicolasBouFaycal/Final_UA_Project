@@ -5,7 +5,12 @@ import { Subject } from 'rxjs';
   providedIn: 'root'
 })
 export class AuthenticationService {
-  loginUser = new Subject();
-
+  public role!:number;
   constructor() { }
+  public setLogedUser(roleNumber:number){
+    this.role = roleNumber;
+  }
+  public getLogedUser(){
+    return this.role;
+  }
 }

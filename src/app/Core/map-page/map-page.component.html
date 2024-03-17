@@ -7,29 +7,13 @@
         <img (click)="leftSidebarVisible = true" src="../../../assets/imgs/map/ic-bus.png" alt="Buses" title="Buses">
         <p-sidebar [(visible)]="leftSidebarVisible" position="left">
             <h3>Available Buses</h3>
-            <input type="search" placeholder="Search for Bus" pInputText />
-            <div class="active-buses">
+            <input type="search" placeholder="Search for Bus" pInputText [(ngModel)]="searchBus"  (keyup)="searchBuses(searchBus)" />
+            <div class="active-buses" *ngFor="let busRoute of setBusRouteData">
                 <div class="box">
-                    <label>Michel (beirut-bekaa)</label>
-                    <p-button (click)="ViewBusOnMap(1)" icon="pi pi-check" size="small"></p-button>
+                    <label>{{ busRoute.userName }} ({{ busRoute.routeName }})</label>
+                    <p-button (click)="ViewBusOnMap(busRoute.busLng,busRoute.busLat,busRoute.busId)" icon="pi pi-check" size="small"></p-button>
                 </div>
-                <div class="box">
-                    <label>Michel (beirut-bekaa)</label>
-                    <p-button icon="pi pi-check" size="small"></p-button>
-                </div>
-                <div class="box">
-                    <label>Michel (beirut-bekaa)</label>
-                    <p-button icon="pi pi-check" size="small"></p-button>
-                </div>
-                <div class="box">
-                    <label>Michel (beirut-bekaa)</label>
-                    <p-button icon="pi pi-check" size="small"></p-button>
-                </div>
-                <div class="box">
-                    <label>Michel (beirut-bekaa)</label>
-                    <p-button icon="pi pi-check" size="small"></p-button>
-                </div>
-            </div>
+            </div>            
         </p-sidebar>
     </div>
     <div class="map-Settings-side-bar" >
@@ -47,4 +31,4 @@
     </div>
 </div>
 
-<p style="position: absolute;bottom: 50%;">Lat :{{latLong.lat}} Long: {{latLong.lng}}</p>
+<button *ngIf="showSeeAllBuses" type="button" style="position: absolute;bottom: 50%;" (click)="getAllActiveBusesAgain()">See All Buses</button>
