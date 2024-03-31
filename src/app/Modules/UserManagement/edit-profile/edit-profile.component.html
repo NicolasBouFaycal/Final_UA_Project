@@ -1,39 +1,50 @@
 <div class="profile-container">
     <div class="background-container">
         <div class="inside-background-container">
-            <div class="container">
-                <div class="row">
-                    <h2>Edit Profile</h2>
-                    <div class="col-md-12">
-                        <div class="element-container-flex">
-                            <label>First Name</label>
-                            <input type="text" pInputText />
-                        </div>
-                    </div>
-                    <div class="col-md-12">
-                        <div class="element-container-flex">
-                            <label>Last Name</label>
-                            <input type="text" pInputText />
-                        </div>
-                    </div>
-                    <div class="col-md-11">
-                        <div class="element-container-flex">
-                            <label>Email</label>
-                            <input disabled type="text" pInputText />
-                        </div>
-                    </div>
-                    <div class="col-md-1">
-                        <p-button routerLink="/main/user-management/edit-email" id="bt1" label="Edit"></p-button>
-                    </div>
-                    <div class="col-md-4 picture-container">
-                        <label>Profile Picture</label>
-                        <img id="picture" (click)="openPopup()" [src]="displayImage" alt="">
-                    </div>
-                    <div class="col-md-2 save-button  ">
-                        <p-button id="bt1" label="Save Changes"></p-button>
+            <form [formGroup]="editProfile" class="">
+                <div class="container">
+                    <div class="row">
+                            <h2>Edit Profile</h2>
+                            <div class="col-md-12">
+                                <div class="element-container-flex">
+                                    <label>First Name</label>
+                                    <input type="text" formControlName="firstName" pInputText />
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="element-container-flex">
+                                    <label>Last Name</label>
+                                    <input type="text" formControlName="lastName" pInputText />
+                                </div>
+                            </div>
+                            <div class="col-md-11">
+                                <div class="element-container-flex">
+                                    <label>Email</label>
+                                    <input type="text" formControlName="email"  pInputText />
+                                </div>
+                            </div>
+                            <div class="col-md-1">
+                                <p-button routerLink="/main/user-management/edit-email" id="bt1" label="Edit"></p-button>
+                            </div>
+                            <div class="col-md-4 picture-container">
+                                <label>Profile Picture</label>
+                                <img id="picture" (click)="openPopup()" [src]="displayImage" alt="">
+                            </div>
+                            <div class="col-md-2 save-button  ">
+                                <p-button id="bt1" (click)="submit()" label="Save Changes"></p-button>
+                            </div>
                     </div>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
+    <p-dialog [header]="header" [(visible)]="visible" [modal]="true" [style]="{ width: '50vw' }" [draggable]="false" [resizable]="false">
+        <p class="m-0">
+            {{content}}
+        </p>
+    </p-dialog>
+    <p-confirmDialog [style]="{width: '50vw'}"acceptLabel="ok" [closable]=false [rejectVisible]=false></p-confirmDialog>
+</div>
+<div class="back">
+    <img src="../../../../assets/imgs/back/ic-back.svg"  alt="BACK" (click)="goBack()">
 </div>

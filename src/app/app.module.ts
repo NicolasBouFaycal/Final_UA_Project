@@ -9,6 +9,7 @@ import { PopupService } from './Shared/popup.service';
 import { ShapeService } from './Shared/shape.service';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { SharedModule } from 'src/app/Shared/shared.module';
 
 
 @NgModule({
@@ -20,7 +21,8 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
     AppRoutingModule,
     HttpClientModule,
     BrowserAnimationsModule,
-    NgbModule
+    NgbModule,
+    SharedModule
   ],
   providers: [MarkerService,PopupService,ShapeService],
   bootstrap: [AppComponent]

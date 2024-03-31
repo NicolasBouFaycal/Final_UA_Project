@@ -5,49 +5,19 @@
                 <h2>Choose Your Plan</h2>
                 <label id="quote">More you upgrad plan, more you reduce expenses </label>
                 <div class="container">
-                    <div class="row">
-                        <div class="col-md-4">
+                    <div class="row" >
+                        <div class="col-md-4" *ngFor="let plan of plans">
                             <div class="plan">
                                 <div class="center-plan">
-                                    <p id="p-1">GOLD</p>
+                                    <p [class]="plan.color.toLowerCase()">{{plan.name}}</p>
                                 </div>
-                                <div class="place-button b-plan1">
-                                    <p-button (click)="goToPayment(2,10)" label="Select Plan"></p-button>
+                                <div [class]="'place-button ' + plan.color.toLowerCase()">
+                                    <p-button (click)="goToPayment(plan.numberOfDays,plan.price,plan.id)" label="Select Plan"></p-button>
                                 </div>
-                                <img src="../../../../assets/imgs/user-management/plan-orange-img.png" alt="">
+                                <img [src]="'../../../../assets/imgs/user-management/plan-' + plan.color.toLowerCase() + '-img.png'" alt="">
                                 <div class="content">
-                                    <label>10$</label>
-                                    <label>2 Days</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="plan">
-                                <div class="center-plan">
-                                    <p id="p-2">DIAMOND</p>
-                                </div>
-                                <div class="place-button b-plan2">
-                                    <p-button (click)="goToPayment(15,30)" label="Select Plan"></p-button>
-                                </div>
-                                <img src="../../../../assets/imgs/user-management/plan-blue-img.png" alt="">
-                                <div class="content">
-                                    <label>30$</label>
-                                    <label>15 Days</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="plan">
-                                <div class="center-plan">
-                                    <p id="p-3">PLATINUM</p>
-                                </div>
-                                <div class="place-button b-plan3">
-                                    <p-button (click)="goToPayment(30,50)" label="Select Plan"></p-button>
-                                </div>
-                                <img src="../../../../assets/imgs/user-management/plan-green-img.png" alt="">
-                                <div class="content">
-                                    <label>50$</label>
-                                    <label>30 Days</label>
+                                    <label>{{plan.price}}$</label>
+                                    <label>{{plan.numberOfDays}} Days</label>
                                 </div>
                             </div>
                         </div>
@@ -56,4 +26,15 @@
             </div>
         </div>
     </div>
+</div>
+<div class="moove-btn">
+    <p-confirmDialog [style]="{width: '50vw'}" [closable]=false ></p-confirmDialog>
+</div>
+<p-dialog [header]="header"[(visible)]="visible" [modal]="true" [style]="{ width: '50vw' }" [draggable]="false" [resizable]="false">
+    <p class="m-0">
+      {{content}}
+    </p>
+</p-dialog>
+<div class="back">
+    <img src="../../../../assets/imgs/back/ic-back.svg"  alt="BACK" (click)="goBack()">
 </div>

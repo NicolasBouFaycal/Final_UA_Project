@@ -13,6 +13,8 @@ import { PaymentComponent } from './payment/payment.component';
 import { PlanComponent } from './plan/plan.component';
 import { GooglePayButtonModule } from '@google-pay/button-angular';
 import { ReactiveFormsModule } from '@angular/forms';
+import { DialogModule } from 'primeng/dialog';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 @NgModule({
   declarations: [
@@ -30,7 +32,9 @@ import { ReactiveFormsModule } from '@angular/forms';
     PasswordModule,
     ButtonModule,
     GooglePayButtonModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    DialogModule,
+    ConfirmDialogModule
   ]
 })
 export class UserManagementModule { }

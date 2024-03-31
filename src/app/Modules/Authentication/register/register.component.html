@@ -9,7 +9,7 @@
                         <div class="row">
                             <div class="col-md-6 col-sm-12 element-flex-column">
                                 <label>First Name <span>*</span></label>
-                                <input type="text" pInputText formControlName="firstName"/>
+                                <input type="text" pInputText formControlName="firstName" >
                             </div>
                             <div class="col-md-6 col-sm-12 element-flex-column">
                                 <label>Last Name <span>*</span></label>
@@ -46,4 +46,8 @@
     </p-dialog>
     <p-confirmDialog [style]="{width: '50vw'}"acceptLabel="ok" [closable]=false [rejectVisible]=false></p-confirmDialog>
 
+</div>
+
+<div class="back">
+    <img src="../../../../assets/imgs/back/ic-back.svg"  alt="BACK" (click)="goBack()">
 </div>

@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { MenuItem } from 'primeng/api';
 import { Router } from '@angular/router';
@@ -6,6 +6,7 @@ import { MenuService } from '../Services/menu.service';
 import { HttpClient } from '@angular/common/http';
 import { AuthenticationService } from 'src/app/Modules/UserManagement/Services/authentication.service';
 import { Subscription, fromEvent, interval, takeWhile } from 'rxjs';
+import { LoaderService } from 'src/app/Shared/Services/loader-service.service';
 
 @Component({
   selector: 'app-map-page',
@@ -13,7 +14,7 @@ import { Subscription, fromEvent, interval, takeWhile } from 'rxjs';
   styleUrls: ['./map-page.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class MapPageComponent implements OnInit {
+export class MapPageComponent implements OnInit,OnDestroy {
   public userRole: Number = 0;
   items!: MenuItem[];
   leftSidebarVisible: boolean = false;
@@ -25,12 +26,14 @@ export class MapPageComponent implements OnInit {
   public searchBus: string = "";
   public showSeeAllBuses=false; 
 
+  private currentLocation:any;
   private _firstEnterToMapDraw=true;
   private intervalsetSingleBusRoute!:Subscription;
   private _saveSingleRoute:google.maps.LatLngLiteral[]=[];
   private _saveSingleBusStop:google.maps.LatLngLiteral[]=[];
   private _routePolilyne: Array<google.maps.Polyline> = [];
   private getAllActiveBusesSubsription!: Subscription;
+  private getBusRouteDataSideMenuSubsription!: Subscription;
   private _anonymousFilterBusRouteData: Array<any> = [];
   private _filterBusRouteData: Array<any> = [{ userName: "", routeName: "", busLng: "", busLat: "", busId: "" }];
   private _allActiveBusesMarkers: Array<google.maps.Marker> = [];
@@ -57,7 +60,7 @@ export class MapPageComponent implements OnInit {
   private BusStops: any;
   activeItem: MenuItem | import("primeng/api").MegaMenuItem | undefined;
 
-  constructor(private _authenticaitonService: AuthenticationService, private http: HttpClient, private menu: MenuService, private confirmationService: ConfirmationService, private messageService: MessageService, private router: Router) {
+  constructor(private loaderService: LoaderService,private _authenticaitonService: AuthenticationService, private http: HttpClient, private menu: MenuService, private confirmationService: ConfirmationService, private messageService: MessageService, private router: Router) {
     this.getBusRouteDataSideMenu();
   }
 
@@ -72,9 +75,9 @@ export class MapPageComponent implements OnInit {
       map: null,
       suppressMarkers: true
     });
-    if (this._authenticaitonService.getLogedUser() == 2) {
-      this.updateBusLocation();
-    };
+    // if (this._authenticaitonService.getLogedUser() == 2) {
+    //   this.updateBusLocation();
+    // };
 
     navigator.geolocation.getCurrentPosition(position => {
       this.center = {
@@ -88,13 +91,25 @@ export class MapPageComponent implements OnInit {
       });
       this.map.setCenter(this.center);
     });
-  this.asyncAllActiveBuses();
 
-    interval(2000)
-      .subscribe(() => {
-        this.getBusRouteDataSideMenu();
-      });
+    navigator.geolocation.watchPosition(position => {
+      this.currentLocation = {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude
+      };
+    });
+    
+   
+
+    this.asyncAllActiveBuses();
+    this.asyncBusRouteDataSideMenu();
   }
+
+  public ngOnDestroy(): void {
+    this.getAllActiveBusesSubsription.unsubscribe();
+    this.getBusRouteDataSideMenuSubsription.unsubscribe();
+  }
+
   public confirm() {
     const dummyElement = document.createElement('div');
     this.confirmationService.confirm({
@@ -127,6 +142,7 @@ export class MapPageComponent implements OnInit {
       origin: source,
       destination: destination,
       travelMode: google.maps.TravelMode.DRIVING,
+      provideRouteAlternatives: true,
       drivingOptions: {
         departureTime: new Date(), // Set the departure time for real-time traffic data
         trafficModel: google.maps.TrafficModel.BEST_GUESS // Choose the appropriate traffic model
@@ -134,7 +150,7 @@ export class MapPageComponent implements OnInit {
     };
 
     var currentLocation = new google.maps.Marker({
-      position: this.center,
+      position: this.currentLocation,
       map: this.map,
       title: 'Your Current Location'
     });
@@ -152,9 +168,6 @@ export class MapPageComponent implements OnInit {
         if (response != null) {
           const durationSeconds = response.routes[0].legs[0].duration!.value;
           const durationMinutes = Math.ceil(durationSeconds / 60);
-
-          console.log(`Estimated duration: ${durationMinutes} minutes`);
-
           // Display the estimated duration on the map (e.g., in an info window)
           const infoWindow = new google.maps.InfoWindow({
             content: `Estimated duration: ${durationMinutes} minutes`
@@ -226,6 +239,7 @@ export class MapPageComponent implements OnInit {
   }
 
   public drawStaticRoute() {
+    this.loaderService.show();
     // Example coordinates for the route
     this.http.get("https://localhost:7103/api/Buses/routes").subscribe((response: any) => {
       this.routeCoordinates = response.message.map((groupedRoute: any) => {
@@ -256,6 +270,7 @@ export class MapPageComponent implements OnInit {
       for (const BusStop of this.BusStops) {
         this.CreateBusStops(BusStop);
       }
+      this.loaderService.hide();
     });
     // Optionally, you can set a minimum zoom level to prevent the map from zooming too close
     const maxZoom = 15;
@@ -285,6 +300,10 @@ export class MapPageComponent implements OnInit {
       const busStopMarker = new google.maps.Marker({
         position: coordinate,
         map: this.map,
+        icon: {
+          url: '../../../assets/imgs/map/ic-busStop.png',
+          scaledSize: new google.maps.Size(30, 30)
+        },
         title: `Bus Stop ${index + 1}`
       });
 
@@ -296,7 +315,7 @@ export class MapPageComponent implements OnInit {
         this.infoWindow?.close();
         const busStopCoordinates = busStopMarker.getPosition();
         //const infoWindowContent = `<div><strong>Marker Details</strong><br/>Lat: ${busStopCoordinates?.lat()}<br/>Lng: ${busStopCoordinates?.lng()}</div>`;
-        const infoWindowContent = `<div><strong>Bus Details</strong><br/><b>Name:</b> Michel<br/><b>Passengers Number:</b> 4</div>`;
+        const infoWindowContent = `<div><strong>Bus Stop ${index + 1}</strong></div>`;
 
         // Create and open an infowindow with the details
         this.infoWindow = new google.maps.InfoWindow({
@@ -324,6 +343,7 @@ export class MapPageComponent implements OnInit {
   }
 
   public ViewBusOnMap(busLng: string, busLat: string, busId: string) {
+    this.loaderService.show();
     this.showSeeAllBuses=true;
     if(!this._firstEnterToMapDraw){
       this.intervalsetSingleBusRoute.unsubscribe();
@@ -342,6 +362,7 @@ export class MapPageComponent implements OnInit {
           this.refreshBusLocationAndRoute(busId,enterfirstTime);
         }
       }); 
+      this.loaderService.hide();
   }
 
   private removeAll()
@@ -408,6 +429,7 @@ export class MapPageComponent implements OnInit {
     this._allActiveBusesMarkers.push(currentBus);
     
     if(enterFirstTime){
+      this.loaderService.hide();
       this.map.setCenter(currentBus.getPosition()!);
       this.map.setZoom(12);
     }
@@ -503,9 +525,9 @@ export class MapPageComponent implements OnInit {
         const _busCurrentLocation = new google.maps.Marker({
           position: latLngBus,
           icon: {
-            url: './assets/imgs/bus.png',
+            url: '../../../assets/imgs/map/ic-busActive.png',
             anchor: new google.maps.Point(35, 10),
-            scaledSize: new google.maps.Size(50, 50)
+            scaledSize: new google.maps.Size(40, 40)
           },
           map: this.map,
           title: element.name
@@ -525,6 +547,13 @@ export class MapPageComponent implements OnInit {
       });
     });
   };
+
+  private asyncBusRouteDataSideMenu(){
+    this.getBusRouteDataSideMenuSubsription = interval(2000)
+    .subscribe(() => {
+      this.getBusRouteDataSideMenu();
+    });
+  }
 
   private getBusRouteDataSideMenu() {
     this.http.get("https://localhost:7103/api/Buses/busRouteInfo").subscribe((response: any) => {

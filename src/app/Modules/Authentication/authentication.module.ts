@@ -12,23 +12,22 @@ import { MatDialogModule } from'@angular/material/dialog';
 import { ReactiveFormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-
 @NgModule({
-  declarations: [
-    LoginComponent,
-    RegisterComponent
-  ],
-  imports: [
-    CommonModule,
-    AuthenticationRoutingModule,
-    InputTextModule,
-    PasswordModule,
-    CheckboxModule,
-    ButtonModule,
-    MatDialogModule,
-    ReactiveFormsModule,
-    DialogModule,
-    ConfirmDialogModule,
-  ]
+    declarations: [
+        LoginComponent,
+        RegisterComponent,
+    ],
+    imports: [
+        CommonModule,
+        AuthenticationRoutingModule,
+        InputTextModule,
+        PasswordModule,
+        CheckboxModule,
+        ButtonModule,
+        MatDialogModule,
+        ReactiveFormsModule,
+        DialogModule,
+        ConfirmDialogModule,
+    ]
 })
 export class AuthenticationModule { }

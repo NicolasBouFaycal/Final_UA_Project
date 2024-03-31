@@ -110,7 +110,7 @@ export class FaceDetectionComponent implements OnInit {
     const canvas = faceapi.createCanvasFromMedia(this.videoRef.nativeElement);
     this.canvasContainerFinalPic.nativeElement.appendChild(canvas);
     const imageDataURL = canvas.toDataURL('image/png');
-    this,this.sharedService.setImage(imageDataURL);
+    this.sharedService.setImage(imageDataURL);
     this.stopWebcam();
   }
   stopWebcam() {

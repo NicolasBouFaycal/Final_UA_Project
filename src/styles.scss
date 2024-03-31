@@ -27,14 +27,21 @@
 .p-button{
     border-radius: 12px;
 }
-.b-plan3 .p-button{
+.green .p-button{
     background: #3bf6ef;
     border-color: #3bf6ef;
 }
-.b-plan1 .p-button{
+.orange .p-button{
     background: #ea6f28;
     border-color: #ea6f28;
 }
+.moove-btn{
+    .p-confirm-dialog-reject{
+        margin-right: 30px !important;
+    }
+}
+
+
 
 /* Importing Bootstrap SCSS file. */
 @import 'bootstrap/scss/bootstrap';

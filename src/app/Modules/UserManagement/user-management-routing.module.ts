@@ -6,14 +6,16 @@ import { EditEmailComponent } from './edit-email/edit-email.component';
 import { EditPasswordComponent } from './edit-password/edit-password.component'; 
 import { PaymentComponent } from './payment/payment.component';
 import { PlanComponent } from './plan/plan.component';
+import { userGuard } from './guard/user.guard';
+import { paymentGuard } from './guard/payment.guard';
 
 const routes: Routes = [
   {path:"forget-password",component:ForgetPasswordComponent},
-  {path:"edit-profile",component:EditProfileComponent},
-  {path:"edit-email",component:EditEmailComponent},
-  {path:"edit-password",component:EditPasswordComponent},
-  {path:"payment",component:PaymentComponent},
-  {path:"plan",component:PlanComponent}
+  {path:"edit-profile",component:EditProfileComponent,canActivate: [userGuard]},
+  {path:"edit-email",component:EditEmailComponent,canActivate: [userGuard]},
+  {path:"edit-password",component:EditPasswordComponent,canActivate: [userGuard]},
+  {path:"payment",component:PaymentComponent,canActivate: [userGuard,paymentGuard]},
+  {path:"plan",component:PlanComponent,canActivate: [userGuard]}
 
 ];
 

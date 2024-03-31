@@ -13,10 +13,10 @@
                         <label>Password</label>
                         <p-password [feedback]="false" [toggleMask]="true" formControlName="password"></p-password>
                     </div>
-                    <div class="element-flex-row">
+                    <!-- <div class="element-flex-row">
                         <p-checkbox  [binary]="true" inputId="binary"></p-checkbox>
                         <label>Remember Me ?</label>
-                    </div>
+                    </div> -->
                     <div class="element-flex-row">
                         <p-button (click)="onSubmit()" label="Login"></p-button>
                     </div>
@@ -33,4 +33,5 @@
           {{content}}
         </p>
     </p-dialog>
+    <p-confirmDialog [style]="{width: '50vw'}"acceptLabel="ok" [closable]=false [rejectVisible]=false></p-confirmDialog>
 </div>

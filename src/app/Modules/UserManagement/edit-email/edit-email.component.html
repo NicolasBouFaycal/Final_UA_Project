@@ -1,26 +1,37 @@
 <div class="edit-email-container">
     <div class="background-container">
         <div class="inside-background-container">
-            <div class="container">
-                <div class="row">
-                    <h2>Edit Email</h2>
-                    <div class="col-md-12">
-                        <div class="element-container-flex">
-                            <label>New Email</label>
-                            <input type="text" pInputText />
+            <form [formGroup]="editEmail">
+                <div class="container">
+                    <div class="row">
+                        <h2>Edit Email</h2>
+                        <div class="col-md-12">
+                            <div class="element-container-flex">
+                                <label>New Email</label>
+                                <input type="text" formControlName="email" pInputText />
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-12">
-                        <div class="element-container-flex">
-                            <label>Password</label>
-                            <p-password  [feedback]="false" [toggleMask]="true"></p-password>
+                        <div class="col-md-12">
+                            <div class="element-container-flex">
+                                <label>Password</label>
+                                <p-password  [feedback]="false" formControlName="password" [toggleMask]="true"></p-password>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-12">
-                        <p-button id="bt1" label="Save Changes"></p-button>
+                        <div class="col-md-12">
+                            <p-button id="bt1" (click)="submit()" label="Save Changes"></p-button>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
+    <p-dialog [header]="header" [(visible)]="visible" [modal]="true" [style]="{ width: '50vw' }" [draggable]="false" [resizable]="false">
+        <p class="m-0">
+            {{content}}
+        </p>
+    </p-dialog>
+    <p-confirmDialog [style]="{width: '50vw'}"acceptLabel="ok" [closable]=false [rejectVisible]=false></p-confirmDialog>
+</div>
+<div class="back">
+    <img src="../../../../assets/imgs/back/ic-back.svg"  alt="BACK" (click)="goBack()">
 </div>

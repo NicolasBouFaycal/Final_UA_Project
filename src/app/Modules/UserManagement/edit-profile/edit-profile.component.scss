@@ -1,45 +1,48 @@
 .profile-container{
-    h2{
-        margin-top: 50px;
-        text-align: center;
-        margin-bottom: 50px;
-        color: white;
-    }
-    .element-container-flex{
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-    }
-    #bt1{
-        margin-top: 24px;
-        width: 100%;
-        display: grid;
-        border-radius: 6px;
-    }   
-    .picture-container{
-        position: relative;
-        &::after{
-            content: "⇩";
-            position: absolute;
+    form{ 
+        h2{
+            margin-top: 50px;
+            text-align: center;
+            margin-bottom: 50px;
             color: white;
-            top: 12px;
-            left: 130px;
-            transform: rotate(-90deg);
         }
-        #picture{
-            height: 50px;
-            width: 50px;
-            cursor: pointer;
-            margin-left: 50px;
-            border-radius: 100%;
-            border: 3px solid #2563eb;
+        .element-container-flex{
+            display: flex;
+            flex-direction: column;
+            width: 100%;
         }
-    } 
-    input{
-        margin-bottom: 30px;
-    }
-    .save-button{
-        margin-top: -24px;
+        #bt1{
+            margin-top: 24px;
+            width: 100%;
+            display: grid;
+            border-radius: 6px;
+        }   
+        .picture-container{
+            position: relative;
+            &::after{
+                content: "⇩";
+                position: absolute;
+                color: white;
+                top: 12px;
+                left: 130px;
+                transform: rotate(-90deg);
+            }
+            #picture{
+                height: 50px;
+                width: 50px;
+                cursor: pointer;
+                margin-left: 50px;
+                border-radius: 100%;
+                border: 3px solid #2563eb;
+            }
+        } 
+        input{
+            margin-bottom: 30px;
+        }
+        .save-button{
+            margin-top: -24px;
+        }
+
     }
     .background-container{
         background-image: url(../../../../assets/imgs/authentication/bus-img.jpg);
@@ -67,5 +70,17 @@
         label{
             color: white;
         }
+    }
+}
+.back{
+    position: absolute;
+    margin-top: 30px;
+    margin-left: 20px;
+    img{
+        position: relative;
+        height: 50px;
+        width: 50px;
+        cursor: pointer;
+        z-index: 5;
     }
 }

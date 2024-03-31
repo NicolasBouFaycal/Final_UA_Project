@@ -29,6 +29,8 @@
         <p-toast></p-toast>
         <p-confirmPopup></p-confirmPopup>
     </div>
+
+    <p-button *ngIf="showSeeAllBuses" type="button" label="See All Buses" class="showAllBuses"  (click)="getAllActiveBusesAgain()"></p-button>
 </div>
 
-<button *ngIf="showSeeAllBuses" type="button" style="position: absolute;bottom: 50%;" (click)="getAllActiveBusesAgain()">See All Buses</button>
+

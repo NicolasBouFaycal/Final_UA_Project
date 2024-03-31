@@ -7,6 +7,7 @@ import { HttpClient } from '@angular/common/http';
 import * as CryptoJS from 'crypto-js';
 import { Router } from '@angular/router';
 import { ConfirmationService, MessageService, ConfirmEventType } from 'primeng/api';
+import { LoaderService } from 'src/app/Shared/Services/loader-service.service';
 
 @Component({
   selector: 'app-register',
@@ -20,7 +21,9 @@ export class RegisterComponent implements OnInit {
   public header:string="";
   public content:string=""; 
 
-  constructor(private confirmationService: ConfirmationService, private messageService: MessageService,private router:Router,private http: HttpClient, private fb: FormBuilder, private dialog: MatDialog, private sharedService: SharedService) { }
+  constructor(private loaderService: LoaderService,private confirmationService: ConfirmationService, private messageService: MessageService,private router:Router,private http: HttpClient, private fb: FormBuilder, private dialog: MatDialog, private sharedService: SharedService) {
+    this.loaderService.show();
+   }
 
   registration = this.fb.group({
     firstName: ['', Validators.required],
@@ -33,6 +36,7 @@ export class RegisterComponent implements OnInit {
     this.subscription = this.sharedService.image$.subscribe(imageData => {
       this.displayImage = imageData;
     });
+    this.loaderService.hide();
   }
 
   public openPopup() {
@@ -48,6 +52,10 @@ export class RegisterComponent implements OnInit {
     });
   }
 
+  public goBack(){
+    this.router.navigate(['/main/authentication/login']);
+  }
+
   public async onSubmit() {
     if (this.registration.valid && this.displayImage.length > 400) {
       var pass = this.registration.get("password")?.value;
@@ -60,11 +68,14 @@ export class RegisterComponent implements OnInit {
         profilePic: this.displayImage,
         RoleId: 2
       }
+      this.loaderService.show();
 
        this.http.post('https://localhost:7103/api/Authentication/register', registration).subscribe((response:any) =>{
         if(response.message == "exist"){
+          this.loaderService.hide();
           this.showDialog("Attention","The email already exist");
         }else{
+          this.loaderService.hide();
           this.confirm1("Success","User Registered Successfully");
         }
        });
