@@ -1,8 +1,9 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import * as faceapi from 'face-api.js';
 import { HttpClient } from '@angular/common/http';
 import { SharedService } from 'src/app/Shared/Services/shared.service';
 import { Subscription } from 'rxjs';
+import { Location } from '@angular/common';
  
 
 @Component({
@@ -10,7 +11,7 @@ import { Subscription } from 'rxjs';
   templateUrl: './face-detection.component.html',
   styleUrls: ['./face-detection.component.scss']
 })
-export class FaceDetectionComponent implements OnInit {
+export class FaceDetectionComponent implements OnInit,OnDestroy {
   constructor(private http: HttpClient,private sharedService:SharedService) { }
   @ViewChild('canvasContainer', { static: true }) canvasContainer!: ElementRef;
   @ViewChild('canvasContainerFinalPic', { static: true }) canvasContainerFinalPic!: ElementRef;
@@ -19,6 +20,8 @@ export class FaceDetectionComponent implements OnInit {
   public intervalId:any; 
   receivedData: any;
   private subscription!: Subscription;
+  private starwebCamAgain!: Subscription;
+
   
   private mediaStream: MediaStream | null = null;
   private rectangle = {
@@ -40,6 +43,16 @@ export class FaceDetectionComponent implements OnInit {
         this.stopWebcam();
       }
     });
+    this.starwebCamAgain = this.sharedService.startWebCam$.subscribe(data => {
+      if(data =="true"){
+        location.reload();
+      }
+    });
+  }
+
+  public ngOnDestroy(): void {
+    this.subscription.unsubscribe();
+    this.starwebCamAgain.unsubscribe();
   }
 
   startWebcam() {
@@ -91,11 +104,13 @@ export class FaceDetectionComponent implements OnInit {
         console.error(error);
       });
   }
+
   setRectangleOnCanvas(ctx:any){
     ctx.strokeStyle = 'red'; 
     ctx.lineWidth = 2;
     ctx.strokeRect(this.rectangle.x, this.rectangle.y, this.rectangle.width, this.rectangle.height);
   }
+
  isFaceInRectangle(faceBox: { x: number; y: number; width: any; height: any; }, rectangle: { x: number; y: number; width: any; height: any; }) {
     return (
       faceBox.x >= rectangle.x &&
@@ -113,6 +128,7 @@ export class FaceDetectionComponent implements OnInit {
     this.sharedService.setImage(imageDataURL);
     this.stopWebcam();
   }
+
   stopWebcam() {
     if (this.mediaStream) {
       this.mediaStream.getTracks().forEach(track => track.stop());

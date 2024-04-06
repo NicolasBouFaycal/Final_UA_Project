@@ -1,0 +1,39 @@
+<div class="check-passengers-container">
+    <div class="nav">
+        <h3>Check Passengers Subscription</h3>
+    </div>
+    <div class="content">
+        <ng-container [ngTemplateOutlet]="template === 'info' ? info : template === 'verified' ? verified : error">
+        </ng-container>
+    </div>
+</div>
+
+<ng-template #info>
+    no current verification at this time, Set Passengers face in front of the Camera ... 
+</ng-template>
+
+<ng-template #verified>
+    <div class="box">
+        <div class="header change-color-header-success">
+            <img src="../../../../assets/imgs/driver/ic-check.svg" alt="">
+            <p>Success</p>
+        </div>
+        <div class="body">
+            <p> User Verified Succesfully</p>
+            <button class="change-color-button-success" (click)="successError()">Continue</button>
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #error>
+    <div class="box">
+        <div class="header change-color-header-error">
+            <img src="../../../../assets/imgs/driver/ic-cross.svg" alt="">
+            <p>Failed</p>
+        </div>
+        <div class="body">
+            <p> User Is Not Verified</p>
+            <button class="change-color-button-error" (click)="successError()">Continue</button>
+        </div>
+    </div>
+</ng-template>

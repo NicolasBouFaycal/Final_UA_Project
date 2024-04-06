@@ -15,7 +15,9 @@ const routes: Routes = [
    ]
 },  
 {path:"authentication",loadChildren:()=>import('../Modules/Authentication/authentication.module').then(m=>m.AuthenticationModule)},
-{path:"user-management",loadChildren:()=>import('../Modules/UserManagement/user-management.module').then(m=>m.UserManagementModule)}
+{path:"user-management",loadChildren:()=>import('../Modules/UserManagement/user-management.module').then(m=>m.UserManagementModule)},
+{path:"bus_face_recognititon",loadChildren:()=>import('../Modules/BusFaceRecognititon/bus-face-recognition.module').then(m=>m.BusFaceRecognitionModule)},
+{path:"check_passengers",loadChildren:()=>import('../Modules/Driver/driver.module').then(m=>m.DriverModule)}
 ];
 
 @NgModule({
