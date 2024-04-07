@@ -6,11 +6,13 @@ import { Subject } from 'rxjs';
 })
 export class SharedService {
   private dataSubject = new Subject<any>();
+  private closeCam =new Subject<any>();
   private imageSubject = new Subject<string>();  
   private startWebCamSubject = new Subject<string>();
   private showVerifiedErrorPassenger=new Subject<Boolean>();
 
   data$ = this.dataSubject.asObservable();
+  closeCam$=this.closeCam.asObservable();
   image$ = this.imageSubject.asObservable();
   startWebCam$ = this.startWebCamSubject.asObservable();
   showVerifiedErrorPassenger$= this.showVerifiedErrorPassenger.asObservable();
@@ -19,6 +21,10 @@ export class SharedService {
 
   sendData(data: any) {
     this.dataSubject.next(data);
+  }
+
+  closeCamera(data:any){
+    this.closeCam.next(data);
   }
   setImage(imageData: string) {
     this.imageSubject.next(imageData);

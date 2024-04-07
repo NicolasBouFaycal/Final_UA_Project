@@ -1,6 +1,7 @@
 <div class="check-passengers-container">
     <div class="nav">
         <h3>Check Passengers Subscription</h3>
+        <button (click)="activateDeactivateBtn()">{{activateDeactivate}}</button>
     </div>
     <div class="content">
         <ng-container [ngTemplateOutlet]="template === 'info' ? info : template === 'verified' ? verified : error">

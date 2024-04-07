@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { FaceDetectionComponent } from 'src/app/Core/face-detection/face-detection.component';
 import { SharedService } from 'src/app/Shared/Services/shared.service';
@@ -8,6 +8,7 @@ import * as CryptoJS from 'crypto-js';
 import { Router } from '@angular/router';
 import { ConfirmationService, MessageService, ConfirmEventType } from 'primeng/api';
 import { LoaderService } from 'src/app/Shared/Services/loader-service.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-register',
@@ -20,6 +21,8 @@ export class RegisterComponent implements OnInit {
   public visible: boolean = false;
   public header:string="";
   public content:string=""; 
+
+  private dialogRef!:any;
 
   constructor(private loaderService: LoaderService,private confirmationService: ConfirmationService, private messageService: MessageService,private router:Router,private http: HttpClient, private fb: FormBuilder, private dialog: MatDialog, private sharedService: SharedService) {
     this.loaderService.show();
@@ -34,21 +37,23 @@ export class RegisterComponent implements OnInit {
 
   ngOnInit(): void {
     this.subscription = this.sharedService.image$.subscribe(imageData => {
+      this.dialogRef.close();
       this.displayImage = imageData;
     });
     this.loaderService.hide();
   }
 
+
   public openPopup() {
-    let dialogRef = this.dialog.open(FaceDetectionComponent, {
+    this.dialogRef = this.dialog.open(FaceDetectionComponent, {
       width: '657px',
       height: '556px',
       data: {
         message: ""
       }
     });
-    dialogRef.afterClosed().subscribe(result => {
-      this.sharedService.sendData("popup closed");
+    this.dialogRef.afterClosed().subscribe((result:any) => {
+      this.sharedService.closeCamera("popup closed");
     });
   }
 

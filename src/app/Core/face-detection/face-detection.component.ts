@@ -37,9 +37,9 @@ export class FaceDetectionComponent implements OnInit,OnDestroy {
       faceapi.nets.faceLandmark68Net.loadFromUri('../../../assets/models'),
     ]);
     this.startWebcam();
-    this.subscription = this.sharedService.data$.subscribe(data => {
+    this.subscription = this.sharedService.closeCam$.subscribe(data => {
       this.receivedData = data;
-      if(data="popup closed"){
+      if(data=="popup closed"){
         this.stopWebcam();
       }
     });
@@ -51,6 +51,7 @@ export class FaceDetectionComponent implements OnInit,OnDestroy {
   }
 
   public ngOnDestroy(): void {
+    this.stopWebcam();
     this.subscription.unsubscribe();
     this.starwebCamAgain.unsubscribe();
   }

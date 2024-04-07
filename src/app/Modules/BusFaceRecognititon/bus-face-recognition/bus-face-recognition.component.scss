@@ -19,4 +19,18 @@
             z-index: 1;
         }
     }
+    .openCam{
+        height: 100vh;
+        width: 100%;
+        position: absolute;
+        color: white;
+        z-index: 4;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        h3{
+            text-align: center;
+            width: 300px;
+        }
+    }
 }

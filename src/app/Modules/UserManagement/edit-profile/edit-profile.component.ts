@@ -61,7 +61,7 @@ export class EditProfileComponent implements OnInit {
       }
     });
     dialogRef.afterClosed().subscribe(result => {
-      this.sharedService.sendData("popup closed");
+      this.sharedService.closeCamera("popup closed");
     });
     
     //dialogRef.close('Pizza!');
