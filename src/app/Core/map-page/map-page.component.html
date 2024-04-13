@@ -3,7 +3,7 @@
     <div class="map-loader-container" *ngIf="!mapLoaded">
         <div class="map-loader"></div>
     </div>
-    <div class="map-buses-side-bar" >
+    <div class="map-buses-side-bar" *ngIf="!isDriver">
         <img (click)="leftSidebarVisible = true" src="../../../assets/imgs/map/ic-bus.png" alt="Buses" title="Buses">
         <p-sidebar [(visible)]="leftSidebarVisible" position="left">
             <h3>Available Buses</h3>
@@ -30,7 +30,27 @@
         <p-confirmPopup></p-confirmPopup>
     </div>
 
-    <p-button *ngIf="showSeeAllBuses" type="button" label="See All Buses" class="showAllBuses"  (click)="getAllActiveBusesAgain()"></p-button>
+    <div *ngIf="isDriver">
+        <p-button  type="button" label="Dashboard" class="dashboard"  (click)="navigateToDashboard()"></p-button>
+    </div>
+
+    <p-button *ngIf="isRoutePresent" type="button" label="Remove Route" class="removeRoute"  (click)="removeRoute()"></p-button>
+
+    <p-button  type="button" [label]="traffic" class="ShowTrafficRemoveTraffic"  (click)="toggleShowTraffic()"></p-button>
+
+    <div *ngIf="!isDriver">
+        <p-button *ngIf="showSeeAllBuses" type="button" label="See All Buses" class="showAllBuses"  (click)="getAllActiveBusesAgain()"></p-button>
+    </div>
+
+    <div class="info" *ngIf="isInfo">
+        <img (click)="infoSidebarVisible = true" src="../../../assets/imgs/map/ic-info.gif" alt="Buses" title="Buses">
+        <p-sidebar [(visible)]="infoSidebarVisible" position="left" (onHide)="onSidebarHide()">
+            <h3>Bus Details</h3>
+            <p><b>Driver Name :</b> {{driverName}} </p>
+            <p><b>From - To :</b> {{fromTo}} </p>
+            <p><b>Number Of Passengers :</b> {{numberOfPassenger}}</p>
+        </p-sidebar>
+    </div>
 </div>
 
 

@@ -7,6 +7,7 @@ import { HttpClient } from '@angular/common/http';
 import { AuthenticationService } from 'src/app/Modules/UserManagement/Services/authentication.service';
 import { Subscription, fromEvent, interval, takeWhile } from 'rxjs';
 import { LoaderService } from 'src/app/Shared/Services/loader-service.service';
+import { DecodeTokenService } from '../Services/decode-token.service';
 
 @Component({
   selector: 'app-map-page',
@@ -17,23 +18,35 @@ import { LoaderService } from 'src/app/Shared/Services/loader-service.service';
 export class MapPageComponent implements OnInit,OnDestroy {
   public userRole: Number = 0;
   items!: MenuItem[];
-  leftSidebarVisible: boolean = false;
-  rightSidebarVisible: boolean = false;
-  mapLoaded!: boolean;
-  map!: google.maps.Map;
+  public leftSidebarVisible: boolean = false;
+  public infoSidebarVisible: boolean = false;
+  public rightSidebarVisible: boolean = false;
+  public driverName!:string;
+  public numberOfPassenger!:string;
+  public isInfo:boolean=false;
+  public mapLoaded!: boolean;
+  public map!: google.maps.Map;
+  public fromTo!:string;
   center!: google.maps.LatLngLiteral;
   public setBusRouteData: Array<any> = []
   public searchBus: string = "";
   public showSeeAllBuses=false; 
+  public isDriver!:boolean;
+  public traffic:string="Show Traffic";
+  public isRoutePresent=false;
 
+  private saveLatLongDrawRoute:any;
+  private infoWindowRoute: any;
+  private checkBusCoordinateChange:any;
   private currentLocation:any;
   private _firstEnterToMapDraw=true;
-  private intervalsetSingleBusRoute!:Subscription;
+  private intervalsetSingleBusRoute: Subscription = new Subscription;
+  private drawRouteBetweenTwoMarkers: Subscription = new Subscription;
   private _saveSingleRoute:google.maps.LatLngLiteral[]=[];
   private _saveSingleBusStop:google.maps.LatLngLiteral[]=[];
   private _routePolilyne: Array<google.maps.Polyline> = [];
-  private getAllActiveBusesSubsription!: Subscription;
-  private getBusRouteDataSideMenuSubsription!: Subscription;
+  private getAllActiveBusesSubsription: Subscription= new Subscription();
+  private getBusRouteDataSideMenuSubsription: Subscription= new Subscription();;
   private _anonymousFilterBusRouteData: Array<any> = [];
   private _filterBusRouteData: Array<any> = [{ userName: "", routeName: "", busLng: "", busLat: "", busId: "" }];
   private _allActiveBusesMarkers: Array<google.maps.Marker> = [];
@@ -52,15 +65,18 @@ export class MapPageComponent implements OnInit,OnDestroy {
   clickedOnBusStop = true;
   ds!: google.maps.DirectionsService;
   dr!: google.maps.DirectionsRenderer;
+  trafficLayer!:google.maps.TrafficLayer;
   createdMarkers: google.maps.Marker[] = [];
   clickEventListener!: google.maps.MapsEventListener;
   saveBusStopLongLat: any;
+
+  private watchId:any;
   private busStops: google.maps.Marker[] = [];
   private routeCoordinates: any;
   private BusStops: any;
   activeItem: MenuItem | import("primeng/api").MegaMenuItem | undefined;
 
-  constructor(private loaderService: LoaderService,private _authenticaitonService: AuthenticationService, private http: HttpClient, private menu: MenuService, private confirmationService: ConfirmationService, private messageService: MessageService, private router: Router) {
+  constructor(private _decodeToken:DecodeTokenService,private loaderService: LoaderService,private _authenticaitonService: AuthenticationService, private http: HttpClient, private menu: MenuService, private confirmationService: ConfirmationService, private messageService: MessageService, private router: Router) {
     this.getBusRouteDataSideMenu();
   }
 
@@ -68,46 +84,88 @@ export class MapPageComponent implements OnInit,OnDestroy {
 
     await this.initializeMap();
 
-    this.items = this.menu.menuModel();
-
     this.ds = new google.maps.DirectionsService();
     this.dr = new google.maps.DirectionsRenderer({
       map: null,
       suppressMarkers: true
     });
+    this.infoWindowRoute= new google.maps.InfoWindow();
+    this.trafficLayer=new google.maps.TrafficLayer();
     // if (this._authenticaitonService.getLogedUser() == 2) {
     //   this.updateBusLocation();
     // };
-
     navigator.geolocation.getCurrentPosition(position => {
+      var locationOnStart = {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude
+      };
+      this.map.setCenter(locationOnStart);
+    });
+
+
+    navigator.geolocation.watchPosition(position => {
       this.center = {
         lat: position.coords.latitude,
         lng: position.coords.longitude
       };
-      this.drawStaticRoute();
-
       this.map.addListener('tilesloaded', () => {
         this.mapLoaded = true;
       });
-      this.map.setCenter(this.center);
     });
 
-    navigator.geolocation.watchPosition(position => {
-      this.currentLocation = {
-        lat: position.coords.latitude,
-        lng: position.coords.longitude
-      };
-    });
-    
-   
-
-    this.asyncAllActiveBuses();
-    this.asyncBusRouteDataSideMenu();
+    // navigator.geolocation.watchPosition(position => {
+    //   this.currentLocation = {
+    //     lat: position.coords.latitude,
+    //     lng: position.coords.longitude
+    //   };
+    // });
+    var userId=parseInt(this._decodeToken.getUserId());
+    if(!Number.isNaN(userId)){
+      this.http.get(`https://localhost:7103/api/Users/userRole?userId=${userId}`).subscribe((response:any)=>{
+        if(response.message == "Driver"){
+          this.items =  this.menu.menuModel(response.message);
+          this.isDriver = true;
+          this.http.get(`https://localhost:7103/api/Users/busId?userId=${userId}`).subscribe((bus:any)=>{
+            if(bus.message != false){
+              this.watchId = navigator.geolocation.watchPosition(position => {
+                var dataUser={
+                  userId:userId,
+                  longitude:position.coords.longitude,
+                  latitude:position.coords.latitude
+                }
+                  this.http.post("https://localhost:7103/api/Buses/updateLongLatBus",dataUser).subscribe();
+                });
+                this.http.get(`https://localhost:7103/api/Buses/specificBusDetails?busId=${bus.message.toString()}`).subscribe((response: any) => {
+                  if(response.message != null){
+                    this.ViewBusOnMap("","",bus.message.toString())
+                  }
+                }); 
+            }
+          })
+        }else{
+          this.items =  this.menu.menuModel(response.message);
+          this.isDriver = false;
+          this.drawStaticRoute();
+          this.asyncAllActiveBuses();
+          this.asyncBusRouteDataSideMenu();
+        }
+      });
+    }else{
+      this.items =  this.menu.menuModel();
+      this.isDriver = false;
+      this.drawStaticRoute();
+      this.asyncAllActiveBuses();
+      this.asyncBusRouteDataSideMenu();
+    }
+    this.loaderService.hide();
   }
 
   public ngOnDestroy(): void {
     this.getAllActiveBusesSubsription.unsubscribe();
     this.getBusRouteDataSideMenuSubsription.unsubscribe();
+    navigator.geolocation.clearWatch(this.watchId);
+    this.intervalsetSingleBusRoute.unsubscribe();
+    this.drawRouteBetweenTwoMarkers.unsubscribe();
   }
 
   public confirm() {
@@ -118,6 +176,7 @@ export class MapPageComponent implements OnInit,OnDestroy {
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
         this.messageService.add({ severity: 'info', summary: 'Confirmed', detail: 'Check For Route' });
+        this.loaderService.show();
         this.CalculateDirectionToBusStation();
       },
       reject: () => {
@@ -136,8 +195,18 @@ export class MapPageComponent implements OnInit,OnDestroy {
     this.drawStaticRoute();
   }
 
+  public toggleShowTraffic(){
+    if(this.traffic == "Show Traffic"){
+      this.traffic="Remove Traffic"
+      this.trafficLayer.setMap(this.map);
+    }else{
+      this.traffic="Show Traffic"
+      this.trafficLayer.setMap(null);
+    }
+  }
 
   public setRoutePolyline(source: google.maps.LatLngLiteral, destination: google.maps.LatLngLiteral) {
+    this.isRoutePresent=true;
     let request = {
       origin: source,
       destination: destination,
@@ -161,6 +230,7 @@ export class MapPageComponent implements OnInit,OnDestroy {
         map: this.map,
         preserveViewport: true // Set to true to prevent automatic zoom/pan
       });
+      this.loaderService.hide();
 
       if (status == google.maps.DirectionsStatus.OK) {
         this.dr.setDirections(response);
@@ -169,9 +239,9 @@ export class MapPageComponent implements OnInit,OnDestroy {
           const durationSeconds = response.routes[0].legs[0].duration!.value;
           const durationMinutes = Math.ceil(durationSeconds / 60);
           // Display the estimated duration on the map (e.g., in an info window)
-          const infoWindow = new google.maps.InfoWindow({
-            content: `Estimated duration: ${durationMinutes} minutes`
-          });
+            
+            var content= `Estimated duration: ${durationMinutes} minutes`
+            this.infoWindowRoute.setContent(content);
 
           // Open the info window at the midpoint of the route
           const route = response.routes[0];
@@ -196,15 +266,24 @@ export class MapPageComponent implements OnInit,OnDestroy {
           const midpointIndex = Math.floor(route.overview_path.length / 2);
           const midpointLocation = route.overview_path[midpointIndex];          //const midpoint = bounds.getCenter();
           //infoWindow.setPosition(midpoint);
-          infoWindow.setPosition(midpointLocation);
-          infoWindow.open(this.map);//used when we need to show the estimated time on the maps route
-
+          this.infoWindowRoute.setPosition(midpointLocation);
+          this.infoWindowRoute.open(this.map);//used when we need to show the estimated time on the maps route
+          
           // const trafficLayer = new google.maps.TrafficLayer();
           // trafficLayer.setMap(this.map);
         }
       }
     })
   }
+
+
+  public removeRoute(){
+    this.isRoutePresent=false;
+    this.dr.setDirections({ routes: [] } as unknown as google.maps.DirectionsResult); 
+    this.infoWindowRoute.close();
+  }
+
+
   public setMapMarkers() {
     //insert markers and create a popup with there specific long  lat
     if (this.clickEventListener) {
@@ -217,8 +296,6 @@ export class MapPageComponent implements OnInit,OnDestroy {
         map: this.map,
         title: 'Clicked Location'
       });
-      console.log(event.latLng);
-      console.log(this.clickedLocationMarker);
       this.createdMarkers.push(this.clickedLocationMarker);
       google.maps.event.addListener(this.clickedLocationMarker, 'click', () => {
         // You can customize the content of the infowindow here
@@ -244,14 +321,14 @@ export class MapPageComponent implements OnInit,OnDestroy {
     this.http.get("https://localhost:7103/api/Buses/routes").subscribe((response: any) => {
       this.routeCoordinates = response.message.map((groupedRoute: any) => {
         return groupedRoute.routeStops.map((routeStop: any) => ({
-          lat: routeStop.routeLatitude,
-          lng: routeStop.routeLongitude,
+          lat: routeStop.routeBusStopLatitude,
+          lng: routeStop.routeBusStopLongitude,
         }));
       });
       this.BusStops = response.message.map((groupedRoute: any) => {
         return groupedRoute.routeStops.map((routeStop: any) => ({
-          lat: routeStop.busStopLatitude,
-          lng: routeStop.busStopLongitude,
+          lat: routeStop.routeBusStopLatitude,
+          lng: routeStop.routeBusStopLongitude,
         }));
       });
       for (const routeCoordinate of this.routeCoordinates) {
@@ -334,7 +411,22 @@ export class MapPageComponent implements OnInit,OnDestroy {
   }
 
   public CalculateDirectionToBusStation() {
-    this.setRoutePolyline(this.center, this.saveBusStopLongLat)
+    var enterFirstTimeToDrawRoute=true;
+    this.drawRouteBetweenTwoMarkers.unsubscribe();
+    
+   this.drawRouteBetweenTwoMarkers= interval(2000)
+      .subscribe(() => { 
+        if(enterFirstTimeToDrawRoute==true){
+          this.setRoutePolyline(this.center, this.saveBusStopLongLat);
+          enterFirstTimeToDrawRoute=false;
+          this.saveLatLongDrawRoute=this.center;
+        }else{
+          if( this.saveLatLongDrawRoute.lat != this.center.lat || this.saveLatLongDrawRoute.lng != this.center.lng){
+            this.setRoutePolyline(this.center, this.saveBusStopLongLat);
+            this.saveLatLongDrawRoute = this.center;
+          }
+        }
+      }); 
   }
 
   public RemoveDirection() {
@@ -342,7 +434,17 @@ export class MapPageComponent implements OnInit,OnDestroy {
     this.clickedOnBusStop = true;
   }
 
+  public navigateToDashboard(){
+    this.router.navigate(['/main/check_passengers']);
+  }
+
+  public onSidebarHide(){
+    this.isInfo=false;
+  }
+
   public ViewBusOnMap(busLng: string, busLat: string, busId: string) {
+    this.dr.setDirections({ routes: [] } as unknown as google.maps.DirectionsResult); 
+    this.infoWindowRoute.close();
     this.loaderService.show();
     this.showSeeAllBuses=true;
     if(!this._firstEnterToMapDraw){
@@ -382,20 +484,17 @@ export class MapPageComponent implements OnInit,OnDestroy {
   }
 
   private refreshBusLocationAndRoute(busId:any,enterFirstTime:boolean){
+    this.loaderService.hide();
+    this.mapLoaded=true;
     this.http.get(`https://localhost:7103/api/Buses/specificBusDetails?busId=${busId}`).subscribe((response: any) => {
-      if(!this.areLatLngArraysEqual(this._saveSingleRoute,response.message.routeStopsCoordinates)){
-        this._saveSingleRoute=response.message.routeStopsCoordinates;
-        this.drawSingleStaticRoute(response.message.routeStopsCoordinates);
+      if(response.message != null){
+        if(!this.areLatLngArraysEqual(this._saveSingleRoute,response.message.routeStopsCoordinates)){
+          this._saveSingleRoute=response.message.routeStopsCoordinates;
+          this.drawSingleStaticRoute(response.message.routeStopsCoordinates);
+          this.CreateBusStops(response.message.routeStopsCoordinates);
+        }
+        this.setSingleBusMarker(response.message.busCoordinates.nbOfPassengers,response.message.driverName.name,response.message.routeName,Number(response.message.busCoordinates.lat),Number(response.message.busCoordinates.lng),response.message.busCoordinates.nbOfPassengers,response.message.busCoordinates.name,enterFirstTime);
       }
-      if(!this.areLatLngArraysEqual(this._saveSingleBusStop,response.message.busStopsCoordinates)){
-        this._saveSingleBusStop=response.message.busStopsCoordinates;
-        this.CreateBusStops(response.message.busStopsCoordinates);
-      }
-      this.setSingleBusMarker(Number(response.message.busCoordinates.lat),Number(response.message.busCoordinates.lng),response.message.busCoordinates.nbOfPassengers,response.message.busCoordinates.name,enterFirstTime);
-      let BusPosition: google.maps.LatLngLiteral = { lat: Number(response.message.lat), lng: Number(response.message.lng) }
-      const marker = new google.maps.Marker({
-        position: BusPosition,
-      });
     })
   }
 
@@ -415,34 +514,60 @@ export class MapPageComponent implements OnInit,OnDestroy {
     return true;
 }
 
-  private setSingleBusMarker(lat:number,lng:number,nbOfPassenger:string,name:string,enterFirstTime:boolean){
+  private setSingleBusMarker(numberOfPassenger:any,driverName: any,routeName: any,lat:number,lng:number,nbOfPassenger:string,name:string,enterFirstTime:boolean){
     let BusPosition: google.maps.LatLngLiteral = { lat: lat, lng: lng }
-    const currentBus = new google.maps.Marker({
-      position: BusPosition,
-      icon: {
-        url: './assets/imgs/bus.png',
-        anchor: new google.maps.Point(35, 10),
-        scaledSize: new google.maps.Size(50, 50)
-      },
-      map: this.map,
-    });
-    this._allActiveBusesMarkers.push(currentBus);
-    
+    this.loaderService.hide();
     if(enterFirstTime){
+      this.loaderService.hide();
+      const currentBus = new google.maps.Marker({
+        position: BusPosition,
+        icon: {
+          url: '../../../assets/imgs/map/ic-busActive.png',
+          anchor: new google.maps.Point(35, 10),
+          scaledSize: new google.maps.Size(40, 40)
+        },
+        map: this.map,
+      });
+      this._allActiveBusesMarkers.push(currentBus);
       this.loaderService.hide();
       this.map.setCenter(currentBus.getPosition()!);
       this.map.setZoom(12);
-    }
-    google.maps.event.addListener(currentBus, 'click', (event: any) => {
-      this.infoWindow?.close();
-      //const infoWindowContent = `<div><strong>Marker Details</strong><br/>Lat: ${busStopCoordinates?.lat()}<br/>Lng: ${busStopCoordinates?.lng()}</div>`;
-      const infoWindowContent = `<div><strong>Bus Details</strong><br/><b>Name:</b> ${name}<br/><b>Passengers Number:</b> ${nbOfPassenger}</div>`;
-      // Create and open an infowindow with the details
-      this.infoWindow = new google.maps.InfoWindow({
-        content: infoWindowContent
+      this.checkBusCoordinateChange={
+        lat:lat,
+        lng:lng
+      };
+      google.maps.event.addListener(currentBus, 'click', (event: any) => {
+        this.isInfo = true;
+        this.driverName = driverName;
+        this.numberOfPassenger = numberOfPassenger
+        this.fromTo = routeName;
       });
-      this.infoWindow.open(this.map, currentBus);
-    });
+    }else{
+      if(this.checkBusCoordinateChange.lat != lat || this.checkBusCoordinateChange.lng != lng){
+        this._allActiveBusesMarkers[0].setMap(null);
+        this._allActiveBusesMarkers=[];
+        const currentBus = new google.maps.Marker({
+          position: BusPosition,
+          icon: {
+            url: '../../../assets/imgs/map/ic-busActive.png',
+            anchor: new google.maps.Point(35, 10),
+            scaledSize: new google.maps.Size(40, 40)
+          },
+          map: this.map,
+        });
+        this._allActiveBusesMarkers.push(currentBus);
+        this.checkBusCoordinateChange={
+          lat:lat,
+          lng:lng
+        };
+        google.maps.event.addListener(currentBus, 'click', (event: any) => {
+          this.isInfo = true;
+          this.driverName = driverName;
+          this.numberOfPassenger = numberOfPassenger
+          this.fromTo = routeName;
+        });
+      }
+    }
   }
 
   private initializeMap(): void {
@@ -464,6 +589,8 @@ export class MapPageComponent implements OnInit,OnDestroy {
   }
   
   private asyncAllActiveBuses(){
+    this.dr.setDirections({ routes: [] } as unknown as google.maps.DirectionsResult);
+    this.infoWindowRoute.close();
     this.getAllActiveBusesSubsription = interval(2000)
     .subscribe(() => {
       this.getAllActiveBuses();
@@ -521,7 +648,7 @@ export class MapPageComponent implements OnInit,OnDestroy {
     }
     this.http.get("https://localhost:7103/api/Buses/buses").subscribe((response: any) => {
       response.message.forEach((element: any) => {
-        let latLngBus = { lat: element.latitude, lng: element.longitude }
+        let latLngBus = { lat: element.bus.latitude, lng: element.bus.longitude }
         const _busCurrentLocation = new google.maps.Marker({
           position: latLngBus,
           icon: {
@@ -530,19 +657,15 @@ export class MapPageComponent implements OnInit,OnDestroy {
             scaledSize: new google.maps.Size(40, 40)
           },
           map: this.map,
-          title: element.name
+          title: element.bus.name
         });
         this._allActiveBusesMarkers.push(_busCurrentLocation);
         // Attach a click event listener to the bus stop marker
         google.maps.event.addListener(_busCurrentLocation, 'click', (event: any) => {
-          this.infoWindow?.close();
-          //const infoWindowContent = `<div><strong>Marker Details</strong><br/>Lat: ${busStopCoordinates?.lat()}<br/>Lng: ${busStopCoordinates?.lng()}</div>`;
-          const infoWindowContent = `<div><strong>Bus Details</strong><br/><b>Name:</b> ${element.name}<br/><b>Passengers Number:</b> ${element.numberOfPassenger}</div>`;
-          // Create and open an infowindow with the details
-          this.infoWindow = new google.maps.InfoWindow({
-            content: infoWindowContent
-          });
-          this.infoWindow.open(this.map, _busCurrentLocation);
+          this.isInfo = true;
+          this.driverName = element.driverName;
+          this.numberOfPassenger = element.bus.numberOfPassenger;
+          this.fromTo = element.routeName;
         });
       });
     });
@@ -562,7 +685,6 @@ export class MapPageComponent implements OnInit,OnDestroy {
         this._anonymousFilterBusRouteData.push({ userName: element.userName, routeName: element.routeName, busLng: element.busRouteLong, busLat: element.busRouteLat, busId: element.busId });
       });
       if (!this.arraysHaveSameElements(this._anonymousFilterBusRouteData, this._filterBusRouteData)) {
-        console.log("enter");
         this._filterBusRouteData = this._anonymousFilterBusRouteData;
         this.setBusRouteData = this._anonymousFilterBusRouteData;
       }

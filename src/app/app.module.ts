@@ -10,7 +10,7 @@ import { ShapeService } from './Shared/shape.service';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { SharedModule } from 'src/app/Shared/shared.module';
-
+import { JWT_OPTIONS, JwtHelperService } from '@auth0/angular-jwt';
 
 @NgModule({
   declarations: [
@@ -24,7 +24,9 @@ import { SharedModule } from 'src/app/Shared/shared.module';
     NgbModule,
     SharedModule
   ],
-  providers: [MarkerService,PopupService,ShapeService],
+  providers: [MarkerService,PopupService,ShapeService,
+    { provide: JWT_OPTIONS, useValue: JWT_OPTIONS }, JwtHelperService
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

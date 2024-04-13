@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ConfirmationService } from 'primeng/api';
+import { DecodeTokenService } from 'src/app/Core/Services/decode-token.service';
 import { LoaderService } from 'src/app/Shared/Services/loader-service.service';
 
 @Component({
@@ -15,7 +16,7 @@ export class EditPasswordComponent implements OnInit {
   public content: string = '';
   public visible: boolean = false;
 
-   constructor(private loaderService: LoaderService,private router:Router,private fb:FormBuilder,private _http:HttpClient,private confirmationService: ConfirmationService ){
+   constructor(private _decodeToken:DecodeTokenService,private loaderService: LoaderService,private router:Router,private fb:FormBuilder,private _http:HttpClient,private confirmationService: ConfirmationService ){
     this.loaderService.show();
    }
 
@@ -38,7 +39,7 @@ export class EditPasswordComponent implements OnInit {
     }else if(newPassword != confirmPassword){
       this.showDialog('Attention', "Check your Password" )
     }else{
-      var userId = localStorage.getItem("userId")?.toString();
+      var userId = this._decodeToken.getUserId()?.toString();
       let changePassword={
         UserId:userId,
         Password:password,

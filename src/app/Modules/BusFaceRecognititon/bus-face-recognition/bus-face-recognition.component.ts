@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Subscription, interval } from 'rxjs';
+import { DecodeTokenService } from 'src/app/Core/Services/decode-token.service';
 import { FaceDetectionComponent } from 'src/app/Core/face-detection/face-detection.component';
 import { SharedService } from 'src/app/Shared/Services/shared.service';
 
@@ -14,18 +15,18 @@ export class BusFaceRecognitionComponent implements OnInit ,OnDestroy {
   public subscription: any;
   private checkOpenCam!: Subscription;
   private dialogRef:any;
-  constructor( private _http:HttpClient,private dialog: MatDialog, private sharedService: SharedService){}
+  constructor( private _decodeToken:DecodeTokenService,private _http:HttpClient,private dialog: MatDialog, private sharedService: SharedService){}
 
   ngOnInit(): void {
     this.subscription = this.sharedService.image$.subscribe(async imageData => {
       var img={
         faceRecognititonImage:imageData,
-        driverId:localStorage.getItem("userId")
+        driverId:this._decodeToken.getUserId()
       }
       this.dialogRef.close()
       await this._http.post<any>('https://localhost:7103/api/Buses/faceRecognition', img).subscribe();
     });
-    var userId=parseInt(localStorage.getItem("userId")!);
+    var userId=parseInt(this._decodeToken.getUserId());
     this._http.get<any>(`https://localhost:7103/api/Buses/isUserVerified?userId=${userId}`).subscribe((response:any)=>{
       if(response.message != false && response.message=="info"){
         this.openCam();

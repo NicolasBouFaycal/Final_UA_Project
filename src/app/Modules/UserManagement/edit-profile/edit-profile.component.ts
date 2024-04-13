@@ -4,6 +4,7 @@ import { FormBuilder, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { ConfirmationService } from 'primeng/api';
+import { DecodeTokenService } from 'src/app/Core/Services/decode-token.service';
 import { FaceDetectionComponent } from 'src/app/Core/face-detection/face-detection.component';
 import { LoaderService } from 'src/app/Shared/Services/loader-service.service';
 import { SharedService } from 'src/app/Shared/Services/shared.service'; 
@@ -20,7 +21,7 @@ export class EditProfileComponent implements OnInit {
   public content: string = '';
   public visible: boolean = false;
 
-  constructor(private loaderService: LoaderService,private router:Router,private confirmationService: ConfirmationService,private fb:FormBuilder,private dialog:MatDialog,private sharedService:SharedService,private _http:HttpClient){
+  constructor(private _decodeToken:DecodeTokenService,private loaderService: LoaderService,private router:Router,private confirmationService: ConfirmationService,private fb:FormBuilder,private dialog:MatDialog,private sharedService:SharedService,private _http:HttpClient){
     this.loaderService.show();
     this.subscription = this.sharedService.image$.subscribe(imageData => {
       this.displayImage = imageData;
@@ -35,7 +36,7 @@ export class EditProfileComponent implements OnInit {
 
    public ngOnInit(): void {
     let params = new HttpParams()
-      .set('userId', parseInt(localStorage.getItem("userId")!));
+      .set('userId', parseInt(this._decodeToken.getUserId()));
 
     this._http.get('https://localhost:7103/api/Users/userInfo',{params}).subscribe((response:any)=>{
       if(response.message){
@@ -74,7 +75,7 @@ export class EditProfileComponent implements OnInit {
       this.showDialog("Attention", "Fill All Fields")
     }else{
       let editData={
-        UserId : parseInt(localStorage.getItem("userId")!),
+        UserId : parseInt(this._decodeToken.getUserId()),
         FirstName:firstName,
         LastName:lastName,
         ProfilePic:this.displayImage

@@ -4,6 +4,7 @@ import { PlanService } from '../Services/plan.service';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { ConfirmationService } from 'primeng/api';
 import { LoaderService } from 'src/app/Shared/Services/loader-service.service';
+import { DecodeTokenService } from 'src/app/Core/Services/decode-token.service';
 @Component({
   selector: 'app-plan',
   templateUrl: './plan.component.html',
@@ -16,7 +17,7 @@ export class PlanComponent implements OnInit {
   public content: string = "";
   public visible: boolean = false;
 
-  constructor(private loaderService: LoaderService,private confirmationService: ConfirmationService,private _http:HttpClient,private router: Router,private planService:PlanService){
+  constructor(private _decodeToken:DecodeTokenService,private loaderService: LoaderService,private confirmationService: ConfirmationService,private _http:HttpClient,private router: Router,private planService:PlanService){
     this.loaderService.show();
     this.LoadPlans();
   }
@@ -28,7 +29,7 @@ export class PlanComponent implements OnInit {
   public goToPayment(day:any,money:any,planId:any){
     
     let params = new HttpParams()
-      .set('userId', parseInt(localStorage.getItem("userId")!));
+      .set('userId', parseInt(this._decodeToken.getUserId()));
     this.loaderService.show();
     this._http.get<any>('https://localhost:7103/api/Plans/checkPlanIfExist',{params}).subscribe((response:any) => {
       if(response.message){

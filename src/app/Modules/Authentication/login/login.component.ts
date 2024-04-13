@@ -5,6 +5,7 @@ import {  Router } from '@angular/router';
 import { AuthenticationService } from '../../UserManagement/Services/authentication.service'; 
 import { ConfirmationService } from 'primeng/api';
 import { LoaderService } from 'src/app/Shared/Services/loader-service.service';
+import { DecodeTokenService } from 'src/app/Core/Services/decode-token.service';
 
 @Component({
   selector: 'app-login',
@@ -16,7 +17,7 @@ export class LoginComponent implements OnInit {
   public header:string="";
   public content:string="";
 
-  constructor(private loaderService: LoaderService,private confirmationService: ConfirmationService,private _authenticationService:AuthenticationService,private router:Router,private http:HttpClient,private fb:FormBuilder){
+  constructor(private decode:DecodeTokenService,private loaderService: LoaderService,private confirmationService: ConfirmationService,private _authenticationService:AuthenticationService,private router:Router,private http:HttpClient,private fb:FormBuilder){
     this.loaderService.show();
   }
   public ngOnInit(): void {
@@ -39,19 +40,13 @@ export class LoginComponent implements OnInit {
     }else{
       this.loaderService.show();
       this.http.get("https://localhost:7103/api/Authentication/login",{
-        params:{email:email!,password:password!}}).subscribe((response:any)=>{
+        params:{email:email!,password:password!},withCredentials: true}).subscribe((response:any)=>{
           if(response.message == "false"){
             this.loaderService.hide();
             this.showDialog("Error","Wrong email or password");
           }else{
-            if(response.message.roleId == 2){
-              this._authenticationService.setLogedUser(2);
-            }else if(response.message.roleId == 1){
-              this._authenticationService.setLogedUser(2);
-            }else{
-              this._authenticationService.setLogedUser(2);  
-            }
-            localStorage.setItem("userId",JSON.stringify(response.message.id));
+            localStorage.setItem("accessToken",response.message.accessToken);
+            localStorage.setItem("refreshToken",response.message.token);
             this.loaderService.hide();
             this.router.navigate(['/main/map']);
         }  

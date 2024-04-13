@@ -4,6 +4,7 @@ import { FormBuilder, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { ConfirmationService } from 'primeng/api';
+import { DecodeTokenService } from 'src/app/Core/Services/decode-token.service';
 import { LoaderService } from 'src/app/Shared/Services/loader-service.service';
 
 @Component({
@@ -16,7 +17,7 @@ export class EditEmailComponent implements OnInit {
   public content: string = '';
   public visible: boolean = false;
 
-  constructor(private loaderService: LoaderService,private router:Router,private confirmationService: ConfirmationService,private fb:FormBuilder,private dialog:MatDialog,private _http:HttpClient){
+  constructor(private _decodeToken:DecodeTokenService ,private loaderService: LoaderService,private router:Router,private confirmationService: ConfirmationService,private fb:FormBuilder,private dialog:MatDialog,private _http:HttpClient){
     this.loaderService.show();
   }
 
@@ -34,7 +35,7 @@ export class EditEmailComponent implements OnInit {
       this.showDialog("Attention","InValid Form")
     }else{
       let editEmail={
-        UserId:parseInt(localStorage.getItem("userId")!),
+        UserId:parseInt(this._decodeToken.getUserId()),
         NewEmail:this.editEmail.get("email")?.value,
         Password:this.editEmail.get("password")?.value
       }

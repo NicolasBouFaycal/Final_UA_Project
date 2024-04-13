@@ -8,7 +8,7 @@ import { MapPageComponent } from './map-page/map-page.component';
 import { CaptureImageComponent } from './capture-image/capture-image.component';
 import { WebcamModule } from 'ngx-webcam';
 import { FaceDetectionComponent } from './face-detection/face-detection.component';
-import { HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { SidebarModule } from 'primeng/sidebar';
 import { InputTextModule } from 'primeng/inputtext';
 import { ScrollerModule } from 'primeng/scroller';
@@ -20,6 +20,8 @@ import { ToastModule } from 'primeng/toast';
 import { ConfirmationService,MessageService  } from 'primeng/api';
 import { PanelMenuModule } from 'primeng/panelmenu';
 import { MatDialogModule } from'@angular/material/dialog';
+import { main } from '@popperjs/core';
+import { MainInterceptor } from './interceptors/main.interceptor';
 
 @NgModule({
   declarations: [
@@ -45,6 +47,9 @@ import { MatDialogModule } from'@angular/material/dialog';
     PanelMenuModule,
     MatDialogModule,
   ],
-  providers:[ConfirmationService,MessageService]
+  providers:[
+    ConfirmationService,MessageService,
+    { provide: HTTP_INTERCEPTORS, useClass: MainInterceptor, multi: true }
+  ]
 })
 export class CoreModule { }

@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { ConfirmationService } from 'primeng/api';
 import { LoaderService } from 'src/app/Shared/Services/loader-service.service';
+import { DecodeTokenService } from 'src/app/Core/Services/decode-token.service';
 @Component({
   selector: 'app-payment',
   templateUrl: './payment.component.html',
@@ -18,7 +19,7 @@ export class PaymentComponent implements OnInit {
   public content: string="";
   public visible: boolean=false;
 
-  constructor(private loaderService: LoaderService,private confirmationService: ConfirmationService,private planService:PlanService,private router:Router,private _http:HttpClient){
+  constructor(private _decodeToken:DecodeTokenService,private loaderService: LoaderService,private confirmationService: ConfirmationService,private planService:PlanService,private router:Router,private _http:HttpClient){
   this.loaderService.show();
   }
   ngOnInit(): void {
@@ -73,7 +74,7 @@ export class PaymentComponent implements OnInit {
   )=>{
     if(paymentData){
       let subscribe={
-        UserId:localStorage.getItem("userId"),
+        UserId:this._decodeToken.getUserId(),
         PlansId:this.planId,
         ExpiryDate:this.calculateExpiryDate(this.day)
       }
