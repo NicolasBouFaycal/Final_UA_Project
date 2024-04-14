@@ -46,8 +46,10 @@ export class MainInterceptor implements HttpInterceptor {
       return next.handle(request);
     }else if(request.url.includes('/routes')){
       return next.handle(request);
+    }else if(request.url.includes('/updateLongLatBus')){
+      return next.handle(request);
     }else{
-      return throwError("No token found");
+      return next.handle(request);
     }
   }
 }

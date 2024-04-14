@@ -10,7 +10,6 @@ const routes: Routes = [
   children:[
     {path:"map", component:MapPageComponent},
     {path:'image',component:CaptureImageComponent},
-    {path:'face-detection',component:FaceDetectionComponent },
     {path:'',redirectTo:"map",pathMatch:"full"},
    ]
 },  

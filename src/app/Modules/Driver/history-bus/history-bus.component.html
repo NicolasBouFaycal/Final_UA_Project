@@ -1,0 +1,48 @@
+<div class="history-container">
+    <app-header-driver></app-header-driver>
+    <p-table [value]="products" [tableStyle]="{ 'min-width': '50rem' }"
+    [paginator]="true"
+    [rows]="rows"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+    (onPage)="pageChange($event)"
+    [rowsPerPageOptions]="[5, 25, 50]"
+    >
+        <ng-template pTemplate="caption">
+            <div class="header-table">
+                History
+                <p-button (click)="refreshTable()" icon="pi pi-refresh"></p-button>
+            </div>
+        </ng-template>
+        <ng-template pTemplate="header">
+            <tr>
+                <th>FirstName</th>
+                <th>LastName</th>
+                <th>Email</th>
+                <th>Enter Date</th>
+                <th>Action</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-product>
+            <tr>
+                <td>{{ product.firstName }}</td>
+                <td>{{ product.lastName }}</td>
+                <td>{{ product.email }}</td>
+                <td>{{ product.dateTime }}</td>
+                <td>{{ product.action }}</td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="summary">
+            <div class="flex align-items-center justify-content-between">
+                In total there are {{products ? products.length : 0 }} passengers.
+            </div>
+        </ng-template>
+        <ng-template pTemplate="paginatorleft">
+            <p-button type="button" icon="pi pi-plus" styleClass="p-button-text"></p-button>
+        </ng-template>
+        <ng-template pTemplate="paginatorright">
+            <p-button type="button" icon="pi pi-cloud" styleClass="p-button-text"></p-button>
+        </ng-template>
+    </p-table>
+
+</div>

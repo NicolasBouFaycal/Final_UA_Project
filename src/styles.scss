@@ -40,8 +40,18 @@
         margin-right: 30px !important;
     }
 }
+.p-orderlist-controls{
+    display: none;
+}
 
-
+.history-container{
+    .pi-plus{
+        display: none !important;
+    }
+    .pi-cloud{
+        display: none !important;
+    }
+} 
 
 /* Importing Bootstrap SCSS file. */
 @import 'bootstrap/scss/bootstrap';

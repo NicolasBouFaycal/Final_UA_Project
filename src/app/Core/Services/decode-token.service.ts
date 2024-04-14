@@ -31,7 +31,7 @@ export class DecodeTokenService {
           this.router.navigate(["/main/authentication/login"]);
         }else{
           localStorage.setItem("accessToken",response.message.accessToken);
-          localStorage.setItem("refreshToken",response.message.Token);
+          localStorage.setItem("refreshToken",response.message.token);
         }
       });
     }

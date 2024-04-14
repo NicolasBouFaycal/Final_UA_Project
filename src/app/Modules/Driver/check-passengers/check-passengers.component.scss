@@ -1,24 +1,4 @@
 .check-passengers-container{
-    .nav{
-        width: 100%;
-        height: 100px;
-        background-color: #3B82F6;
-        display: flex;
-        justify-content: space-between; /* Change justify-content to space-between */
-        align-items: center;
-        padding: 0 20px; /* Optional: Add padding to provide some space around the elements */
-
-        h3{
-            color: white;
-        }
-        button{
-            height: 50px;
-            width: 100px;
-            background-color: black;
-            color: white;
-            border-radius: 20px;
-        }
-    }
     .content{
         display: flex;
         justify-content: center;
@@ -81,6 +61,33 @@
                     background-color: red;
                 }
             }
+        }
+    }
+    .order-list{
+        display: flex;
+        flex-wrap: wrap;
+        padding: 0.5rem; /* Assuming p-2 is equivalent to a padding of 0.5rem */
+        align-items: center;
+        gap: 0.75rem; /* Assuming gap-3 is equivalent to a gap of 0.75rem */
+        .items {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem; /* Assuming gap-2 is equivalent to a gap of 0.5rem */
+        }
+        .bold{
+            font-weight: bold; /* Applying font-bold */
+        }
+        .specificItemName {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem; /* Assuming gap-2 is equivalent to a gap of 0.5rem */
+        }
+        .section-list{
+            width: 10rem;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+            border-radius: 0.25rem;
         }
     }
 }

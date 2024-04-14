@@ -85,7 +85,7 @@ export class FaceDetectionComponent implements OnInit,OnDestroy {
               this.setRectangleOnCanvas(ctx);
               this.dectedFace = "Set your Face Inside the rectangle";
             }
-            else if(detections.some(face =>face.detection.score < 0.95)){
+            else if(detections.some(face =>face.detection.score < 0.50)){
               this.setRectangleOnCanvas(ctx);
               this.dectedFace = "Error:Score 0.95 need more light";
             }

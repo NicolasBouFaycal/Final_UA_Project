@@ -1,13 +1,23 @@
 <div class="check-passengers-container">
-    <div class="nav">
-        <h3>Check Passengers Subscription</h3>
-        <button (click)="goToMap()">MAP</button>
-        <button (click)="activateDeactivateBtn()">{{activateDeactivate}}</button>
-    </div>
+    <app-header-driver></app-header-driver>
     <div class="content">
         <ng-container [ngTemplateOutlet]="template === 'info' ? info : template === 'verified' ? verified : error">
         </ng-container>
     </div>
+    <p-orderList [value]="products" [listStyle]="{ height: '25rem' }" header="Current Passengers">
+        <ng-template let-product pTemplate="item">
+            <div class="order-list">
+                <img [src]="product.profilePic"  class="section-list" />
+                <div class="items">
+                    <span class="bold">{{ product.firstName +' '+ product.lastName }}</span>
+                    <div class="specificItemName">
+                        <span>{{ product.email }}</span>
+                    </div>
+                </div>
+                <!-- <span class="bold text-900">{{ '$' + product.price }}</span> -->
+            </div>
+        </ng-template>
+    </p-orderList>
 </div>
 
 <ng-template #info>
@@ -22,7 +32,7 @@
         </div>
         <div class="body">
             <p> User Verified Succesfully</p>
-            <button class="change-color-button-success" (click)="successError()">Continue</button>
+            <button class="change-color-button-success" (click)="successError()">{{passegerState}}</button>
         </div>
     </div>
 </ng-template>

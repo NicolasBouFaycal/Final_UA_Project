@@ -1,38 +1,48 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subscription, interval } from 'rxjs';
 import { DecodeTokenService } from 'src/app/Core/Services/decode-token.service';
 import { SharedService } from 'src/app/Shared/Services/shared.service';
+import { FaceRecognitionService } from '../services/face-recognition.service';
+import { Product } from '../models/product';
+import { ProductService } from '../services/product.service';
 
 @Component({
   selector: 'app-check-passengers',
   templateUrl: './check-passengers.component.html',
-  styleUrls: ['./check-passengers.component.scss']
-})
-export class CheckPassengersComponent implements OnInit {
-  public template:any;
-  public activateDeactivate!:string;
+  styleUrls: ['./check-passengers.component.scss'],
 
+})
+export class CheckPassengersComponent implements OnInit,OnDestroy {
+  public template:any;
+  public passegerState:any;
+  public products!: any;
+  public passengersInfo:any
+
+  private listenToPassegersInBus:Subscription=new Subscription();
   private watchId:any;
   private checkpassenger!:Subscription;
   
-  constructor(private _decodeToken:DecodeTokenService,private router:Router,private _http:HttpClient,private sharedService: SharedService){ }
+  constructor(private productService: ProductService,private _facerecog:FaceRecognitionService,private _decodeToken:DecodeTokenService,private router:Router,private _http:HttpClient,private sharedService: SharedService){}
 
   ngOnInit(): void {
-    var userId=parseInt(this._decodeToken.getUserId());
-    this._http.get<any>(`https://localhost:7103/api/Buses/busActiveState?userId=${userId}`).subscribe((response:any)=>{
-      if(response.message != false){
-        this.activateDeactivate="Deactivate";
-      }else{
-        this.activateDeactivate="Activate";
-      }
-    });
+   this.listenToUserInBusInfo();
+    
       this.template = 'info';
      this.asyncCheckPassenger();
   }
-  public successError(){
+
+  ngOnDestroy(): void {
+    this.listenToPassegersInBus.unsubscribe();
+  }
+
+  public successError(){ 
     var userId=parseInt(this._decodeToken.getUserId());
+    var numberOfPassengers={
+      passengerId:localStorage.getItem("passengerId"),
+      busUserId:userId
+    }
     var user={
       userId:userId
     }
@@ -42,39 +52,29 @@ export class CheckPassengersComponent implements OnInit {
         this.asyncCheckPassenger();
       }
     });
-    this._http.post("https://localhost:7103/api/Buses/updateNumberOfPassenger",user).subscribe();
-  }
+    if(localStorage.getItem("passengerId") != null){
+      this._http.post("https://localhost:7103/api/Buses/updateNumberOfPassenger",numberOfPassengers).subscribe(()=>{
+        localStorage.removeItem("passengerId")
+      });
 
-  public goToMap(){
-    this.router.navigate(['/main/map']);
-  }
-  
-  public activateDeactivateBtn(){
-    var userId=parseInt(this._decodeToken.getUserId());
-    var user={
-      userId:userId
     }
-    this._http.post("https://localhost:7103/api/Buses/activateDeactivate",user).subscribe(response=>{
-      this._http.get<any>(`https://localhost:7103/api/Buses/busActiveState?userId=${userId}`).subscribe((response:any)=>{
-      if(response.message != false){
-        this.activateDeactivate="Deactivate";
-        this.watchId = navigator.geolocation.watchPosition(position => {
-          var dataUser={
-            userId:userId,
-            longitude:position.coords.longitude,
-            latitude:position.coords.latitude
-          }
-            this._http.post("https://localhost:7103/api/Buses/updateLongLatBus",dataUser).subscribe();
-    
-          });
-      }else{
-        this.activateDeactivate="Activate";
-        navigator.geolocation.clearWatch(this.watchId)
-      }
-    });
-    });
-
   }
+
+  public getSeverity (product: Product) {
+    switch (product.inventoryStatus) {
+        case 'INSTOCK':
+            return 'success';
+
+        case 'LOWSTOCK':
+            return 'warning';
+
+        case 'OUTOFSTOCK':
+            return 'danger';
+
+        default:
+            return null;
+    }
+  };
 
   private asyncCheckPassenger(){
     this.checkpassenger = interval(2000)
@@ -82,18 +82,40 @@ export class CheckPassengersComponent implements OnInit {
       this.getPassengerLocalStorage();
     });
   }
+  private listenToUserInBusInfo(){
+    this.listenToPassegersInBus = interval(2000)
+    .subscribe(() => {
+      this.getUserInBusInfo();
+    });
+  }
+
+  private getUserInBusInfo(){
+    this.productService.getCurrentPassengersInBus().then((data:any) => (this.products = data));
+  }
 
   private getPassengerLocalStorage(){
-    var userId=parseInt(this._decodeToken.getUserId());
-    this._http.get<any>(`https://localhost:7103/api/Buses/isUserVerified?userId=${userId}`).subscribe((response:any)=>{
+    var busUserId=parseInt(this._decodeToken.getUserId());
+    if(localStorage.getItem("passengerId") != null){
+      this._http.get<any>(`https://localhost:7103/api/Buses/checkPassengerEnterLeave?busUserId=${busUserId}&passengerId=${parseInt(localStorage.getItem("passengerId")!)}`).subscribe((response:any)=>{
       if(response.message != false){
-        if(response.message=="verified" || response.message=="error"){
-          this.template = response.message
+        if(response.message.busVerifyRecognition=="verified"){
+          this.passegerState = response.message.enterLeaveEmpty;
+          this.template = response.message.busVerifyRecognition
           this.checkpassenger.unsubscribe();
-        }else{
-          this.template = response.message
+        }else if(response.message.busVerifyRecognition=="error"){
+          this.passegerState = "Continue"
+          this.template = response.message.busVerifyRecognition
+          this.checkpassenger.unsubscribe();
+        }
+        else{
+          this.template = response.message.busVerifyRecognition
         }
       }
     });
+    }else{
+      this._http.get<any>(`https://localhost:7103/api/Buses/isUserVerified?userId=${busUserId}`).subscribe((response:any)=>{
+        this.template = response.message
+      })
+    }
   }
 }
