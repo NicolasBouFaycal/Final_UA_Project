@@ -34,7 +34,11 @@ export class MapPageComponent implements OnInit,OnDestroy {
   public isDriver!:boolean;
   public traffic:string="Show Traffic";
   public isRoutePresent=false;
+  public checkRoutesChanged:any[]=[];
+  public initialRoute:any[]=[];
 
+
+  private drawRouteStaticData:Subscription=new Subscription();
   private saveLatLongDrawRoute:any;
   private infoWindowRoute: any;
   private checkBusCoordinateChange:any;
@@ -145,7 +149,7 @@ export class MapPageComponent implements OnInit,OnDestroy {
         }else{
           this.items =  this.menu.menuModel(response.message);
           this.isDriver = false;
-          this.drawStaticRoute();
+          this.drawAllRouteDataAsyc();
           this.asyncAllActiveBuses();
           this.asyncBusRouteDataSideMenu();
         }
@@ -153,7 +157,7 @@ export class MapPageComponent implements OnInit,OnDestroy {
     }else{
       this.items =  this.menu.menuModel();
       this.isDriver = false;
-      this.drawStaticRoute();
+      this.drawAllRouteDataAsyc();
       this.asyncAllActiveBuses();
       this.asyncBusRouteDataSideMenu();
     }
@@ -166,6 +170,7 @@ export class MapPageComponent implements OnInit,OnDestroy {
     navigator.geolocation.clearWatch(this.watchId);
     this.intervalsetSingleBusRoute.unsubscribe();
     this.drawRouteBetweenTwoMarkers.unsubscribe();
+    this.drawRouteStaticData.unsubscribe();
   }
 
   public confirm() {
@@ -192,7 +197,7 @@ export class MapPageComponent implements OnInit,OnDestroy {
     this.intervalsetSingleBusRoute.unsubscribe();
     this.removeAll();
     this.asyncAllActiveBuses();
-    this.drawStaticRoute();
+    this.drawAllRouteDataAsyc();
   }
 
   public toggleShowTraffic(){
@@ -317,38 +322,34 @@ export class MapPageComponent implements OnInit,OnDestroy {
 
   public drawStaticRoute() {
     this.loaderService.show();
-    // Example coordinates for the route
     this.http.get("https://localhost:7103/api/Buses/routes").subscribe((response: any) => {
-      this.routeCoordinates = response.message.map((groupedRoute: any) => {
-        return groupedRoute.routeStops.map((routeStop: any) => ({
-          lat: routeStop.routeBusStopLatitude,
-          lng: routeStop.routeBusStopLongitude,
-        }));
-      });
-      this.BusStops = response.message.map((groupedRoute: any) => {
-        return groupedRoute.routeStops.map((routeStop: any) => ({
-          lat: routeStop.routeBusStopLatitude,
-          lng: routeStop.routeBusStopLongitude,
-        }));
-      });
-      for (const routeCoordinate of this.routeCoordinates) {
-        // Create a Polyline with the specified coordinates
-        const routePolyline = new google.maps.Polyline({
-          path: routeCoordinate,
-          geodesic: true,
-          strokeColor: '#FF0000', // Color of the route line
-          strokeOpacity: 1.0,
-          strokeWeight: 4,
-          // Thickness of the route line
-          map: this.map
-        });
-        this._routePolilyne.push(routePolyline);
+      this.initialRoute=response.message;
+      var routeData= this.getBusRoutes(response.message)
+      if(this.dataHasChanged(this.checkRoutesChanged,this.initialRoute)){
+        this.removeDrawRoute();
+        this.routeCoordinates=routeData;
+        this.checkRoutesChanged=this.initialRoute;
+        this.BusStops=routeData;
+        for (const routeCoordinate of this.routeCoordinates) {
+          // Create a Polyline with the specified coordinates
+          const routePolyline = new google.maps.Polyline({
+            path: routeCoordinate,
+            geodesic: true,
+            strokeColor: '#FF0000', // Color of the route line
+            strokeOpacity: 1.0,
+            strokeWeight: 4,
+            // Thickness of the route line
+            map: this.map
+          });
+          this._routePolilyne.push(routePolyline);
+        }
+        this.removeDrawBusStops();
+        for (const BusStop of this.BusStops) {
+          this.CreateBusStops(BusStop);
+        }
       }
-      for (const BusStop of this.BusStops) {
-        this.CreateBusStops(BusStop);
-      }
-      this.loaderService.hide();
     });
+    this.loaderService.hide();
     // Optionally, you can set a minimum zoom level to prevent the map from zooming too close
     const maxZoom = 15;
     const zoom = this.map.getZoom() || 0;
@@ -449,6 +450,7 @@ export class MapPageComponent implements OnInit,OnDestroy {
     this.showSeeAllBuses=true;
     if(!this._firstEnterToMapDraw){
       this.intervalsetSingleBusRoute.unsubscribe();
+      this.drawRouteStaticData.unsubscribe();
     }
     this._firstEnterToMapDraw=false;
     this.getAllActiveBusesSubsription.unsubscribe();
@@ -467,6 +469,47 @@ export class MapPageComponent implements OnInit,OnDestroy {
       this.loaderService.hide();
   }
 
+  private dataHasChanged(previousData:any[] ,currentData: any[]): boolean {
+    // Check if previous data exists and compare each object in the arrays
+
+    if(previousData==undefined){
+      return true;
+    }
+    if (previousData.length !== currentData.length) {
+      return true; // Different number of objects
+    }
+
+    for (let i = 0; i < currentData.length; i++) {
+      if (!this.isEqual(previousData[i], currentData[i])) {
+        return true; // Object at index i has changed
+      }
+    }
+
+    return false; // Data has not changed
+  }
+
+  private isEqual(obj1: any, obj2: any): boolean {
+    // Check if two objects are equal by comparing their properties
+    return JSON.stringify(obj1) === JSON.stringify(obj2);
+  }
+
+  private getBusRoutes(input:any){
+    var routeData=input.map((groupedRoute: any) => {
+      return groupedRoute.routeStops.map((routeStop: any) => ({
+        lat: routeStop.routeBusStopLatitude,
+        lng: routeStop.routeBusStopLongitude,
+      }));
+    });
+    return routeData;
+  }
+
+  private drawAllRouteDataAsyc(){
+    this.drawRouteStaticData = interval(2000)
+    .subscribe(() => {
+      this.drawStaticRoute();
+    });
+  }
+
   private removeAll()
   {
     this._allActiveBusesMarkers.forEach(markerBusData => {
@@ -481,6 +524,20 @@ export class MapPageComponent implements OnInit,OnDestroy {
       routePolilyne.setMap(null);
     })
     this._routePolilyne = [];
+  }
+
+  private removeDrawRoute(){
+    this._routePolilyne.forEach(routePolilyne => {
+      routePolilyne.setMap(null);
+    })
+    this._routePolilyne = [];
+  }
+
+  private removeDrawBusStops(){
+    this.busStops.forEach(busStopMarker => {
+      busStopMarker.setMap(null);
+    })
+    this.busStops = [];
   }
 
   private refreshBusLocationAndRoute(busId:any,enterFirstTime:boolean){
